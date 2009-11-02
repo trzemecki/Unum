@@ -107,7 +107,7 @@ class Unum(object):
     # TODO: expose value and unit as properties.
     
     # TODO: conv is a terrible name throughout. Find replacement?
-    def __init__(self, unit, value=1.0, conv=None, name=''):
+    def __init__(self, unit, value=1, conv=None, name=''):
         """Create a new unum object.
         
         unit  is a dictionary of {unit symbol : exponent}
@@ -464,7 +464,7 @@ class Unum(object):
             from value converted to self's unit
             raises DimensionError exception if self and value have incompatible units
         """          
-        self._value[index] = Unum.coerceToUnum(value).asNumber(Unum(self._unit, 1.0))
+        self._value[index] = Unum.coerceToUnum(value).asNumber(Unum(self._unit, 1))
 
     def __len__(self):
         """ returns the length of self's value
@@ -545,7 +545,7 @@ class Unum(object):
         
         # TODO: docstring example for unit.
         """
-        return Unum({symbol:1}, 1.0, conv, name)
+        return Unum({symbol:1}, 1, conv, name)
     unit = staticmethod(unit)
     
     def reset(unitTable=None):
