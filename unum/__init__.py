@@ -100,12 +100,8 @@ class Unum(object):
     #  the value is a tuple (conversion unum, level, name)
     _unitTable = {}
 
-    # -- definition of instance's attributes -------------------------
-    # TODO: review using slots vs something else.
     __slots__ = ('_value', '_unit', '_normal')
 
-    # TODO: expose value and unit as properties.
-    
     # TODO: conv is a terrible name throughout. Find replacement?
     def __init__(self, unit, value=1, conv=None, name=''):
         """Create a new unum object.
@@ -140,6 +136,30 @@ class Unum(object):
                 level = conv_unum.maxLevel() + 1
                 conv_unum._normal = True
             Unum._unitTable[unit_key] = conv_unum, level, name
+
+    def defineUnit(cls, symbol, conv=0, name=''):
+        """Return a new unit represented by the string symbol.
+        
+        If conv is 0, the new unit is a base unit.
+        If conv is a Unum, the new unit is a derived unit equal to conv.
+        
+        # TODO: docstring example for unit.
+        """
+        return cls({symbol:1}, 1, conv, name)
+    defineUnit = classmethod(defineUnit)
+    
+    def reset(cls, unitTable=None):
+        """Clear the unit table, replacing it with the new one if provided."""
+        if unitTable is None:
+            cls._unitTable = {}
+        else:
+            cls._unitTable = unitTable
+    reset = classmethod(reset)
+
+    def getUnitTable(cls):
+        """Return a copy of the unit table."""
+        return cls._unitTable.copy()
+    getUnitTable = classmethod(getUnitTable)
 
     def get_value(self): return self._value
     value = property(get_value, doc="The value part of the Unum.")
@@ -540,32 +560,6 @@ class Unum(object):
         if conv is None:
             raise Unum.UnumError(Unum.ERR_NOCONVERT % self)    
         return self.replaced(u, conv).fix()
-
-    # Static methods.
-    # TODO: consider why we would want to use static methods.
-    def unit(symbol, conv=0, name=''):
-        """Return a new unit represented by the string symbol.
-        
-        If conv is 0, the new unit is a base unit.
-        If conv is a Unum, the new unit is a derived unit equal to conv.
-        
-        # TODO: docstring example for unit.
-        """
-        return Unum({symbol:1}, 1, conv, name)
-    unit = staticmethod(unit)
-    
-    def reset(unitTable=None):
-        """Clear the unit table, replacing it with the new one if provided."""
-        if unitTable is None:
-            Unum._unitTable = {}
-        else:
-            Unum._unitTable = unitTable
-    reset = staticmethod(reset)
-
-    def getUnitTable():
-        """Return a copy of the unit table."""
-        return Unum._unitTable.copy()
-    getUnitTable = staticmethod(getUnitTable)
 
     def coerceToUnum(value):
         """Return a unitless Unum if value is a number.
