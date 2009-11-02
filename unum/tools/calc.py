@@ -88,13 +88,13 @@ if __name__ == '__main__':
        try: 
           try:
              print(eval(s,_globalDict))
-          except (Unum.DimensionError,Unum.UnumError) as err:
-             print("%s: %s" % (err.__class__,err)) 
+          except (Unum.DimensionError,Unum.UnumError):
+             print("%s: %s" % (exc_info()[2:])) 
        except:
           try:
              exec(s, _globalDict)
-          except (Unum.DimensionError,Unum.UnumError) as err:
-             print("%s: %s" % (err.__class__,err)) 
+          except (Unum.DimensionError,Unum.UnumError):
+             print("%s: %s" % exc_info()[2:]) 
           except:
              print("%s: %s" % exc_info()[:2])
 
