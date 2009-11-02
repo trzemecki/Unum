@@ -141,6 +141,12 @@ class Unum(object):
                 conv_unum._normal = True
             Unum._unitTable[unit_key] = conv_unum, level, name
 
+    def get_value(self): return self._value
+    value = property(get_value, doc="The value part of the Unum.")
+    
+    def get_unit(self): return self._unit
+    unit = property(get_unit, doc="The unit part of the Unum.")
+    
     def copy(self, normalized=False):
         """Return a copy of this Unum, normalizing the copy if specified."""
         result = Unum(self._unit.copy(), self._value)
