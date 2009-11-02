@@ -22,8 +22,9 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 --------------------------------------------------------------------
 '''
+import sys
 
-__version__ = '04.00'
+__version__ = '04.01'
 
 
 # == Unum class =====================================================
@@ -191,7 +192,7 @@ class Unum(object):
           res.normalize()
        return res
        
-   def as(self,other):
+   def as_unit(self,other):
        ''' other is the unum with target unit;
            returns a new unum representing self in converted units;
            raises DimensionError exception if self and other have incompatible units
@@ -199,7 +200,7 @@ class Unum(object):
        '''
        other = Unum.coerceToUnum(other)
        if (other._value == 0) or (other != Unum(other._unit,1)):
-          raise Unum.UnumError(Unum.ERR_BASIC % other)
+          raise Unum.UnumError(Unum.ERR_BIC % other)
        s, o = self.matchUnits(other)
        res = Unum(other._unit,s._value/o._value)
        res._normal = True
@@ -615,6 +616,11 @@ class Unum(object):
           res = Unum(Unum._NO_UNIT, value)
        return res
    coerceToUnum = staticmethod(coerceToUnum)
+
+# Maintain API compatibility with Unum 4 and lower.
+# "as" became a reserved word in 2.5, so we can't use it.
+if sys.version_info < (2,5):
+   setattr(Unum, "as", Unum.as_unit)
 
 
 # == end of Unum class ==============================================
