@@ -275,18 +275,18 @@ from unum import Unum
 _globalDict = globals()
 nbSuccesses = 0
 nbFailures = 0
-print "Starting Unum Automatic Tests ..."
+print("Starting Unum Automatic Tests ...")
 for unumExpression, expectedResult in _testList:
     try: 
        try:
           actualResult = str(eval(unumExpression,_globalDict))
-       except (Unum.DimensionError,Unum.UnumError), err:
+       except (Unum.DimensionError,Unum.UnumError) as err:
           actualResult = "%s: %s" % (err.__class__,err)
     except:
        try:
-          exec unumExpression in _globalDict
+          exec(unumExpression, _globalDict)
           actualResult = ""
-       except (Unum.DimensionError,Unum.UnumError), err:   
+       except (Unum.DimensionError,Unum.UnumError) as err:   
           actualResult = "%s: %s" % (err.__class__,err)
        except:
           actualResult = "%s: %s" % exc_info()[:2]    
@@ -299,17 +299,17 @@ for unumExpression, expectedResult in _testList:
     else:    
        nbSuccesses += 1
     if TRACE or error:
-       print ">>> %s" % unumExpression
+       print(">>> %s" % unumExpression)
        if actualResult:
-          print actualResult
+          print(actualResult)
     if error:
-       print "#### TEST ERROR"
-       print "####   expected : '%s'" % expectedResult
-       print "####   actual   : '%s'" % actualResult
+       print("#### TEST ERROR")
+       print("####   expected : '%s'" % expectedResult)
+       print("####   actual   : '%s'" % actualResult)
 
-print "End      Unum Automatic Tests"
-print 80 * '-'
-print "Number of failing tests    : %4d" % nbFailures
-print "Number of successful tests : %4d" % nbSuccesses
-print "Total number of tests      : %4d" % (nbFailures + nbSuccesses)
-print 80 * '-'
+print("End      Unum Automatic Tests")
+print(80 * '-')
+print("Number of failing tests    : %4d" % nbFailures)
+print("Number of successful tests : %4d" % nbSuccesses)
+print("Total number of tests      : %4d" % (nbFailures + nbSuccesses))
+print(80 * '-')

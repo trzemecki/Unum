@@ -23,5 +23,5 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 --------------------------------------------------------------------
 '''
 
-from others import *
-from custom import *
+from unum.units.others import *
+from unum.units.custom import *

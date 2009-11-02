@@ -168,15 +168,15 @@ class Unum(object):
        if conv is None:
           self._normal = False
        else:
-          unit_key = unit.keys()[0]
-          if Unum._unitTable.has_key(unit_key):
+          unit_key = list(unit.keys())[0]
+          if unit_key in Unum._unitTable:
              raise Unum.UnumError(Unum.ERR_DUPLICATE % unit_key)
           self._normal = True
           if conv is 0:
              conv_unum = None
              level = 0
           else:
-             if (value == 0) or len(unit) != 1 or unit.values()[0] != 1:
+             if (value == 0) or len(unit) != 1 or list(unit.values())[0] != 1:
                 raise Unum.UnumError(Unum.ERR_BASIC % self)
              conv_unum = Unum.coerceToUnum(conv)/value
              level = conv_unum.maxLevel() + 1
@@ -240,7 +240,7 @@ class Unum(object):
        while new_subst_unums:
              subst_unums, new_subst_unums = new_subst_unums, []
              for subst_dict, subst_unum in subst_unums:
-                 for u, exp in subst_unum._unit.items():
+                 for u, exp in list(subst_unum._unit.items()):
                      conv_unum = Unum._unitTable[u][0]
                      if conv_unum is not None:
                         new_subst_dict = subst_dict.copy()
@@ -277,7 +277,7 @@ class Unum(object):
    def maxLevel(self):
        ''' returns the maximum level of self's units
        '''
-       return max([0]+[Unum._unitTable[u][1] for u in self._unit.keys()])
+       return max([0]+[Unum._unitTable[u][1] for u in list(self._unit.keys())])
 
    def matchUnits(self,other):
        ''' searches a unit compatible with self and other,
@@ -348,7 +348,7 @@ class Unum(object):
           unit = self._unit
        else:
           unit = self._unit.copy()
-          for u, exp in other._unit.items():          
+          for u, exp in list(other._unit.items()):          
               exp += unit.get(u,0)
               if exp:
                  unit[u] = exp
@@ -365,14 +365,17 @@ class Unum(object):
           unit = self._unit
        else: 
           unit = self._unit.copy()
-          for u, exp in other._unit.items():          
+          for u, exp in list(other._unit.items()):          
               exp -= unit.get(u,0)
               if exp:
                  unit[u] = -exp
               else:
                  del unit[u]
-       return Unum(unit, self._value / other._value)
-       
+       return Unum(unit, self._value / other._value)    
+   # Python 3.0 compatibility.
+   __truediv__ = __div__
+   __floordiv__ = __div__
+   
    def __pow__(self,other):
        ''' overloading of exponentiation operator (self ** other);
            returns a new unum;
@@ -383,7 +386,7 @@ class Unum(object):
           other = other.copy(True)
           other.checkNoUnit()       
           unit = self._unit.copy()
-          for u in self._unit.keys():
+          for u in list(self._unit.keys()):
               unit[u] *= other._value
        else:
           unit = Unum._NO_UNIT
@@ -448,7 +451,7 @@ class Unum(object):
            returns a long matching self's value
            raises DimensionError exception if self has unit(s)
        '''          
-       return long(self.asNumber(1))
+       return int(self.asNumber(1))
    
    def __float__(self):
        ''' overloading of float(self) operation
@@ -486,7 +489,10 @@ class Unum(object):
            returns a new unum
        '''          
        return Unum.coerceToUnum(other).__div__(self)
-
+   # Python 3.0 compatibility.
+   __rtruediv__ = __rdiv__
+   __rfloordiv__ = __rdiv__
+       
    def __rpow__(self,other):
        ''' overloading of exponentiation operator (other ** self)
            where self is a unum while other is not
@@ -526,7 +532,7 @@ class Unum(object):
               f = str(exp)
            return f
        num, den = '', ''
-       units = self._unit.items()       
+       units = list(self._unit.items())       
        if Unum.UNIT_SORTING:
           units.sort()
        for u, exp in units:          
@@ -573,7 +579,7 @@ class Unum(object):
        '''
        if len(self._unit) != 1:
           raise Unum.UnumError(Unum.ERR_NOCONVERT % (+self).fix())
-       u = self._unit.keys()[0]
+       u = list(self._unit.keys())[0]
        conv = Unum._unitTable[u][0]
        if conv is None:
           raise Unum.UnumError(Unum.ERR_NOCONVERT % self)    

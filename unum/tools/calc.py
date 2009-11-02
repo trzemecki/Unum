@@ -45,7 +45,7 @@ def udict():
     '''
     unumDict = {}
     globDict = globals()
-    for name in globDict.keys():
+    for name in list(globDict.keys()):
         value = globDict[name]
         if isinstance(value,Unum):
            unumDict[name] = value
@@ -58,7 +58,7 @@ def ucat(unum=None):
         sorted by variable name
     ''' 
     unumDict = udict()
-    unumNames = unumDict.keys()
+    unumNames = list(unumDict.keys())
     unumNames.sort()
     unitTable = Unum.getUnitTable()
     res = ''
@@ -66,7 +66,7 @@ def ucat(unum=None):
         foundUnum = unumDict[unumName]
         if unum is None or unum is foundUnum:
            if len(foundUnum._unit) == 1:
-              symbol = foundUnum._unit.keys()[0]
+              symbol = list(foundUnum._unit.keys())[0]
               conv,level,name = unitTable.get(symbol)
               res += "%-10s : %-10s" % (unumName,'[%s]'%symbol)
               if conv is None:
@@ -87,26 +87,26 @@ if __name__ == '__main__':
        '''
        try: 
           try:
-             print eval(s,_globalDict)
-          except (Unum.DimensionError,Unum.UnumError), err:
-             print "%s: %s" % (err.__class__,err) 
+             print(eval(s,_globalDict))
+          except (Unum.DimensionError,Unum.UnumError) as err:
+             print("%s: %s" % (err.__class__,err)) 
        except:
           try:
-             exec s in _globalDict
-          except (Unum.DimensionError,Unum.UnumError), err:
-             print "%s: %s" % (err.__class__,err) 
+             exec(s, _globalDict)
+          except (Unum.DimensionError,Unum.UnumError) as err:
+             print("%s: %s" % (err.__class__,err)) 
           except:
-             print "%s: %s" % exc_info()[:2]
+             print("%s: %s" % exc_info()[:2])
 
 # ---- main program ------------------------------------------------
 
    _globalDict = globals()
-   print S_BANNER
+   print(S_BANNER)
    while True:
       try:
-         _interpret(raw_input(PROMPT))
+         _interpret(input(PROMPT))
       except EOFError:
          break
-   print E_BANNER
+   print(E_BANNER)
 
 # == End of main program ===========================================
