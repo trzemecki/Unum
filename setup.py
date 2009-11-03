@@ -12,9 +12,6 @@ setup(name = "Unum",
       setup_requires=['nose>=0.11'],
       test_suite = "nose.collector",
       packages = ('unum',
-                  'unum.units',
-                  'unum.units.si',
-                  'unum.units.others',
-                  'unum.units.custom',
-                  'unum.tools')
+                  'unum.units'
+      )
 )

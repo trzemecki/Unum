@@ -498,7 +498,3 @@ class Unum(object):
 # "as" became a reserved word in 2.5, so we can't use it.
 if sys.version_info < (2, 5):
     setattr(Unum, "as", Unum.asUnit)
-
-
-# == end of Unum class ==============================================
-

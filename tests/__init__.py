@@ -1,8 +1,12 @@
-# Test negative exponents by setting UNIT_DIV_SEP
+# TODO: write simple regression test suite.
+# Main purpose is to be able to setup.py test on various Python installations.
+
 from unum.units import *
 
-def test_ok():
-    pass
-    
-def test_fail():
-    assert False
+# Test core arithmetic
+
+# Test conversion functions
+
+# Test integration
+
+# Test compatibility with old API where possible
