@@ -42,7 +42,7 @@ hs = HS = unit("hs", 10**2 * s, "hectosecond")
 das = DAS = unit("das", 10**1 * s, "decasecond")
 ys = YS = unit("ys", 10**-24 * s, "yoctosecond")
 zs = ZS = unit("zs", 10**-21 * s, "zeptosecond")
-as = AS = unit("as", 10**-18 * s, "attosecond")
+AS = unit("as", 10**-18 * s, "attosecond") # as is a reserved word
 fs = FS = unit("fs", 10**-15 * s, "femtosecond")
 ps = PS = unit("ps", 10**-12 * s, "picosecond")
 ns = NS = unit("ns", 10**-9 * s, "nanosecond")

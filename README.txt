@@ -26,6 +26,9 @@
     introduce incompatibilities with old code from integer vs. floating
     point division. In Python 3.x there is no problem.
 
+  - Prefixed versions of the 7 base SI units are supplied. So you can use
+    "cm", "ns", "kA", "mK", "pmol", "Mcd", and "g" out of the box.
+
 -------------------------------------------------------------------------
 * Prerequisites: 
 -------------------------------------------------------------------------

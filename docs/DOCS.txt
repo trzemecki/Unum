@@ -18,17 +18,17 @@ Example
 For a simple example, let's can calculate Usain Bolt's average speed during his record-breaking performance in the 2008 Summer Olympics::
 
     >>> from unum.units import * # Load a number of common units.
-    >>> distance = 100*M
-    >>> time = 9.683*S
+    >>> distance = 100*m
+    >>> time = 9.683*s
     >>> speed = distance / time
     >>> speed
     10.3273778788 [m/s]
-    >>> speed.asUnit(MILE/H)
+    >>> speed.asUnit(mile/h)
     23.1017437978 [mile/h]
     
 If we do something dimensionally incorrect, we get an exception rather than silently computing a correct result. Let's try calculating his kinetic energy using an erroneous formula::
 
-    >>> KE = 86*KG * speed / 2 # Should be speed squared!
+    >>> KE = 86*kg * speed / 2 # Should be speed squared!
     >>> KE.asUnit(J)
     Traceback (most recent call last):
       File "<stdin>", line 1, in <module>
@@ -40,7 +40,7 @@ If we do something dimensionally incorrect, we get an exception rather than sile
     
 The exception pinpoints the problem, allowing us to examine the units and fix the formula::
 
-    >>> KE = 86*KG * speed**2 / 2
+    >>> KE = 86*kg * speed**2 / 2
     >>> KE.asUnit(J)
     4586.15355558 [J]
 
