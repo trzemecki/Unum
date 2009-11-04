@@ -358,10 +358,11 @@ class Unum(object):
     def asNumber(self, other=None):
         """Return the (normalized) raw value of self.
         
-        If other is a basic unit, first convert to other's units before
-        returning the raw value.
+        If other is supplied, first convert to other's units before returning
+        the raw value.
         
-        Raises NonBasicUnitError if other is supplied and not a basic unit.            
+        Raises NonBasicUnitError if other is supplied, but has a value other
+        than 1. (e.g., kg.asNumber(2*g) is an error, but kg.asNumber(g) is ok.)            
         """
         if other is None:
             return self.copy(True)._value
