@@ -1,3 +1,5 @@
+-*- restructuredtext -*-
+
 ============
 Introduction
 ============
@@ -8,7 +10,7 @@ Features include:
 - Exceptions for incorrect use of units.
 - Automatic and manual conversion between compatible units.
 - Easily extended to arbitrary units.
-- Integration with any type supporting arithmetic operations, including Numpy arrays and standard library types like complex, decimal.Decimal, and fractions.Fraction.
+- Integration with any type supporting arithmetic operations, including Numpy arrays and standard library types like complex and fractions.Fraction.
 - Customizable output formatting.
 
 =======
@@ -78,7 +80,7 @@ Unums are automatically coerced back to regular numbers where legal and desirabl
 Installation
 ============
 
-Unum requires Python 2.2 or higher. Python 3.x should be supported as well, but do report any bugs!
+Unum requires Python 2.2 or higher. Python 3.x should be supported as well, but please report any bugs!
 
 If you have setuptools installed, you can install or upgrade to the latest version of Unum using easy_install::
 
@@ -174,6 +176,7 @@ Numpy integration
 =================
 
 Unum works with Numpy with a couple caveats. First, there is a difference between left-multiplying and right-multiplying with an Unum::
+
     >>> from numpy import array
     >>> array([2,3,4]) * m  # note that meters is on the right here
     array([2 [m], 3 [m], 4 [m]], dtype=object)
@@ -261,7 +264,11 @@ You can keep your favorite units in a normal Python module, and then import that
     MSPAM = Unum.unit('millispam', 0.001 * SPAM)
     SPS = Unum.unit('sps', SPAM / S)
 
-Placing this module anywhere on your Python path will allow you to do "from my_spam import *" and have your units available.
+Placing this module anywhere on your Python path will allow you to do::
+
+    >>> from my_spam import *
+
+and have your units available.
 
 ================
 Predefined units
@@ -305,11 +312,13 @@ By default, Unum will find the shortest unit representation among equivalent exp
     1 [N]
     
 This behavior can be controlled by a flag on the Unum class::
+
     >>> Unum.AUTO_NORM = False
     >>> Pa * m**2
     1 [Pa.m2]
     
 Then you must manually normalize by calling the normalize method::    
+
     >>> x = Pa * m**2
     >>> x
     1 [Pa.m2]
