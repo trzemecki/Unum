@@ -16,5 +16,6 @@ setup(name = "Unum",
                   'unum.units.custom',
                   'unum.units.others',
                   'unum.units.si',
+                  'tests',
       )
 )
