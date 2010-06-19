@@ -57,3 +57,8 @@ def test_numpy():
     arr = unum.uarray([2,3,4])
     assert isinstance(arr, unum.Unum)
     assert isinstance(arr.asNumber(), ndarray)
+   
+def test_case_sensitive():
+    # Test fix for issue #2 with seconds/Siemens confusion
+    assert_raises(unum.IncompatibleUnitsError, lambda: S.asUnit(h))
+    assert h.asUnit(s) == 3600 * s

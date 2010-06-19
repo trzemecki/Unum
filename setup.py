@@ -3,7 +3,7 @@ ez_setup.use_setuptools()
 from setuptools import setup
 
 setup(name = "Unum",
-      version = "4.1.0",
+      version = "4.1.1",
       description  = "Units in Python",
       author = "Chris MacLeod, Pierre Denis",
       author_email = "ChrisM6794@gmail.com",

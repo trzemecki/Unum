@@ -4,7 +4,7 @@
 """
 import sys
 
-__version__ = '04.01'
+__version__ = '04.02'
 
 class ShouldBeUnitlessError(TypeError):
     """An operation on a Unum failed because it had units unexpectedly."""
@@ -113,7 +113,7 @@ class Unum(object):
         raises UnumError exception if conv is a unum
                 although unit and value do not represent a basic unit
         """
-        object.__init__(self)
+        object.__init__(self)        
         self._value = value
         self._unit = unit
         if conv is None:

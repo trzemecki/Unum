@@ -7,7 +7,7 @@ from unum import Unum
 from unum.units.si import *
 unit = Unum.unit
 
-min        = MIN      = unit( 'min'      , 60 * S            , 'minute'                    )
+min        = MIN      = unit( 'min'      , 60 * s            , 'minute'                    )
 h          = H        = unit( 'h'        , 60 * MIN          , 'hour'                      )
 d          = D        = unit( 'd'        , 24 * H            , 'day'                       )
 deg        = ARCDEG   = unit( 'deg'      , pi/180 * RAD      , 'degree (angle)'            )
