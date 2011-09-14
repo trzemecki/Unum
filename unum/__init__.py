@@ -352,6 +352,14 @@ class Unum(object):
         s, o = self.matchUnits(Unum.coerceToUnum(other))
         return cmp(s._value, o._value)
 
+    def __lt__(self, other):
+        s, o = self.matchUnits(Unum.coerceToUnum(other))
+        return s._value < o._value
+    
+    def __eq__(self, other):
+        s, o = self.matchUnits(Unum.coerceToUnum(other))
+        return s._value == o._value
+    
     def __abs__(self):
         return Unum(self._unit.copy(), abs(self._value)) 
 
