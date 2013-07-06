@@ -1,0 +1,21 @@
+syntax: glob
+
+.project
+.pydevproject
+*.bak
+Unum.egg-info*
+build*
+dist*
+nose-*
+
+*.pyc
+*.pyo
+*.pickle
+*.jpg
+*.png
+*.exe
+*savegame*
+.coverage
+Thumbs.db
+glob:*_profile
+glob:org.eclipse*
