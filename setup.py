@@ -1,15 +1,26 @@
-import ez_setup
-ez_setup.use_setuptools()
-from setuptools import setup
+try:
+    from ez_setup import use_setuptools
+    use_setuptools()
+except ImportError:
+    pass
 
+try:
+    from setuptools import setup
+except ImportError:
+    from distutils.core import setup
+
+__version_info__ = (4, 1, 2)
+__version__ = '.'.join([str(v) for v in __version_info__])	
+	
 setup(name = "Unum",
-      version = "4.1.1",
+      version = __version__,
       description  = "Units in Python",
       author = "Chris MacLeod, Pierre Denis",
       author_email = "ChrisM6794@gmail.com",
       url = "http://bitbucket.org/kiv/unum/",
       license = "LGPL",
       setup_requires=['nose>=0.11'],
+	  py_modules=['ez_setup'],
       test_suite = "nose.collector",
       packages = ('unum',
                   'unum.units',
