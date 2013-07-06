@@ -9,6 +9,9 @@ from nose.tools import *
 
 # Test core arithmetic
 def test_addition():
+    print (mg)
+    print (mg + mg)
+    print (2*mg)
     assert mg + mg == 2*mg
     assert_raises(unum.IncompatibleUnitsError, lambda: mg+ms)
 
