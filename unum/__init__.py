@@ -348,17 +348,29 @@ class Unum(object):
             unit = Unum._NO_UNIT
         return Unum(unit, self._value ** other._value)
 
-    def __cmp__(self, other):
-        s, o = self.matchUnits(Unum.coerceToUnum(other))
-        return cmp(s._value, o._value)
-
     def __lt__(self, other):
         s, o = self.matchUnits(Unum.coerceToUnum(other))
         return s._value < o._value
-    
+
+    def __le__(self, other):
+        s, o = self.matchUnits(Unum.coerceToUnum(other))
+        return s._value <= o._value
+
+    def __gt__(self, other):
+        s, o = self.matchUnits(Unum.coerceToUnum(other))
+        return s._value > o._value
+
+    def __ge__(self, other):
+        s, o = self.matchUnits(Unum.coerceToUnum(other))
+        return s._value >= o._value
+
     def __eq__(self, other):
         s, o = self.matchUnits(Unum.coerceToUnum(other))
         return s._value == o._value
+
+    def __ne__(self, other):
+        s, o = self.matchUnits(Unum.coerceToUnum(other))
+        return s._value != o._value
     
     def __abs__(self):
         return Unum(self._unit.copy(), abs(self._value)) 
