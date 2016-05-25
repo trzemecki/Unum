@@ -1,10 +1,11 @@
 *************************************************************************
 *                                                                       *
-*                              Unum 4.1                                 *
+*                              Unum 4.2                                 *
 *                           Units in Python                             *
 *                                                                       *
 *                      (c) 2000-2003 Pierre Denis                       *
 *                      (c) 2009-2010 Chris MacLeod                      *
+*                      (c) 2016      Leszek Trzemecki                   *
 *                                                                       *
 *************************************************************************
 
@@ -39,7 +40,10 @@
 -------------------------------------------------------------------------
 * To install Unum:
 -------------------------------------------------------------------------
+  Simple use:
+  - pip install git+git://github.com/trzemecki/Unum.git
 
+  Alternatively:
   - unzip Unum installation files to any directory.
   - cd <install-directory>
   - python setup.py install
@@ -47,12 +51,6 @@
     i.e. it will create the directory <python-site-packages-dir>/unum 
   - if the installation is successful (see below),
     you can safely remove <your-install-directory>
-
-  - alternately, if you have setuptools installed you can do:
-    "easy_install unum" to obtain it online from PyPI.
-
-  - On Windows you may need to do "python -m easy_install unum" instead.
-  - On Linux you may need to do "sudo easy_install unum".
 
 -------------------------------------------------------------------------
 * To run the test cases:
@@ -65,10 +63,7 @@
 * Other information :
 -------------------------------------------------------------------------
 
-  - Website: http://bitbucket.org/kiv/unum/
-  - E-mail : ChrisM6794@gmail.com
-  - Old site : http://home.tiscali.be/be052320/Unum.html  
-  (for a comprehensive tutorial, papers, etc.)
+  - Clone from: http://bitbucket.org/kiv/unum/
 
 
 =========================================================================
