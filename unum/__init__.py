@@ -64,6 +64,21 @@ except ImportError:
     pass
 
 
+def with_unit(value, unit):
+    if isinstance(value, Unum):
+        value.matchUnits(unit)
+    else:
+        value = value * unit
+
+    return value
+
+
+def unitless(*values):
+    unit = Unum(values[0]._unit, 1)
+
+    return (value.asNumber(unit) for value in values)
+
+
 def unit(symbol, conv=0, name=''):
     """Return a new unit represented by the string symbol.
 
