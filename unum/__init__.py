@@ -254,7 +254,14 @@ class Unum(object):
         """   
         if self._unit == other._unit:
             return self, other
-        
+            
+        if self._value == 0:
+            return Unum(other._unit, self._value), other
+            
+        if other._value == 0:
+            return self, Unum(self._unit, other._value)
+            
+        _matchUnits(self, other)
         s = self.copy()
         o = other.copy()
         s_length, o_length = len(s._unit), len(o._unit)
