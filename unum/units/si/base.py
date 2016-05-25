@@ -3,8 +3,7 @@
 Source : http://physics.nist.gov/cuu/Units/units.html)
 """
 
-from unum import Unum
-unit = Unum.unit
+from unum import unit
 
 m = M = unit("m", 0, "meter")
 Ym = YM = unit("Ym", 10**24 * m, "yottameter")
@@ -168,5 +167,4 @@ g = unit("g", 10**-3 * kg, "gram")
 
 
 # cleaning
-del Unum
 del unit

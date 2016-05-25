@@ -64,6 +64,18 @@ except ImportError:
     pass
 
 
+def unit(symbol, conv=0, name=''):
+    """Return a new unit represented by the string symbol.
+
+    If conv is 0, the new unit is a base unit.
+    If conv is a Unum, the new unit is a derived unit equal to conv.
+
+    >>> KB = Unum.defineUnit("kB", 0, "kilobyte")
+    >>> MB = Unum.defineUnit("MB", 1000*KB, "megabyte")
+    """
+    return Unum({symbol: 1}, 1, conv, name)
+
+
 class Unum(object):
     """Encapsulates a value attached to a unit.
     
