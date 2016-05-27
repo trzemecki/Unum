@@ -4,20 +4,20 @@ Unum 4.2 - Units in Python
 &copy; 2009-2010 Chris MacLeod<br/>
 &copy; 2016      Leszek Trzemecki<br/>
 
-Prerequisites: 
+Prerequisites
 -------------------------------------------------------------------------
 
   - Python 2.2 or higher. Python 3.x should work as well, but please
     report any bugs.
 
-Installation:
+Installation
 -------------------------------------------------------------------------
-### Using pip:
+### Using pip
   If you have not git yet, install it from https://git-scm.com/downloads
   ```{r, engine='bash', count_lines}
     pip install git+git://github.com/trzemecki/Unum.git
   ```
-### Alternatively:
+### Alternatively
   unzip Unum installation files to any directory.
   ```{r, engine='bash', count_lines}
     cd <install-directory>
@@ -322,13 +322,13 @@ Then you must manually normalize by calling the normalize method::
     
 Note that normalize permanently modifies the instance itself as a side-effect.
 
-To run the test cases:
+To run the test cases
 -------------------------------------------------------------------------
 ```{r, engine='bash', count_lines}
   cd <install-directory>
   python setup.py test
 ```
-Other information :
+Other information
 -------------------------------------------------------------------------
 
   - This repository is cloned from: http://bitbucket.org/kiv/unum/
