@@ -2,8 +2,25 @@
 
 Source : http://physics.nist.gov/cuu/Units/units.html)
 """
+from unum.core import unit
 
-from unum import unit
+__all__ = [
+    'A', 'AA', 'ACD', 'AG', 'AK', 'AM', 'AMOL', 'CA', 'CCD', 'CD', 'CG', 'CK', 'CM', 'CMOL', 'DA', 'DAA', 'DACD',
+    'DAG', 'DAK', 'DAM', 'DAMOL', 'DCD', 'DG', 'DK', 'DM', 'DMOL', 'EA', 'ECD', 'EG', 'EK', 'EM', 'EMOL', 'Ecd',
+    'Eg', 'Em', 'Emol', 'Es', 'FA', 'FCD', 'FG', 'FK', 'FM', 'FMOL', 'GA', 'GCD', 'GG', 'GK', 'GM', 'GMOL',
+    'Gcd', 'Gg', 'Gm', 'Gmol', 'Gs', 'HA', 'HCD', 'HG', 'HK', 'HM', 'HMOL', 'K', 'KA', 'KCD', 'KG', 'KK', 'KM',
+    'KMOL', 'M', 'MA', 'MCD', 'MG', 'MK', 'MM', 'MMOL', 'MOL', 'Mcd', 'Mg', 'Mm', 'Mmol', 'Ms', 'NA', 'NCD',
+    'NG', 'NK', 'NM', 'NMOL', 'PA', 'PCD', 'PG', 'PK', 'PM', 'PMOL', 'Pcd', 'Pg', 'Pm', 'Pmol', 'Ps', 'TA',
+    'TCD', 'TG', 'TK', 'TM', 'TMOL', 'Tcd', 'Tg', 'Tm', 'Tmol', 'Ts', 'UA', 'UCD', 'UG', 'UK', 'UM', 'UMOL',
+    'YA', 'YCD', 'YG', 'YK', 'YM', 'YMOL', 'Ycd', 'Yg', 'Ym', 'Ymol', 'Ys', 'ZA', 'ZCD', 'ZG', 'ZK', 'ZM',
+    'ZMOL', 'Zcd', 'Zg', 'Zm', 'Zmol', 'Zs', 'aA', 'aK', 'acd', 'ag', 'am', 'amol', 'cA', 'cK', 'ccd', 'cd',
+    'cg', 'cm', 'cmol', 'cs', 'dA', 'dK', 'daA', 'daK', 'dacd', 'dag', 'dam', 'damol', 'das', 'dcd', 'dg', 'dm',
+    'dmol', 'ds', 'fA', 'fK', 'fcd', 'fg', 'fm', 'fmol', 'fs', 'g', 'hA', 'hK', 'hcd', 'hg', 'hm', 'hmol', 'hs',
+    'kA', 'kK', 'kcd', 'kg', 'km', 'kmol', 'ks', 'm', 'mA', 'mK', 'mcd', 'mg', 'mm', 'mmol', 'mol', 'ms', 'nA',
+    'nK', 'ncd', 'ng', 'nm', 'nmol', 'ns', 'pA', 'pK', 'pcd', 'pg', 'pm', 'pmol', 'ps', 's', 'uA', 'uK', 'ucd',
+    'ug', 'um', 'umol', 'us', 'yA', 'yK', 'ycd', 'yg', 'ym', 'ymol', 'ys', 'zA', 'zK', 'zcd', 'zg', 'zm', 'zmol',
+    'zs'
+]
 
 m = M = unit("m", 0, "meter")
 Ym = YM = unit("Ym", 10**24 * m, "yottameter")
@@ -164,7 +181,3 @@ mg = MG = unit("mg", 10**-6 * kg, "milligram")
 cg = CG = unit("cg", 10**-5 * kg, "centigram")
 dg = DG = unit("dg", 10**-4 * kg, "decigram")
 g = unit("g", 10**-3 * kg, "gram")
-
-
-# cleaning
-del unit

@@ -1,6 +1,6 @@
 from ..si.base import *
 from ..si.derived import *
-from unum import unit
+from unum.core import unit
 
 
 __all__ = [

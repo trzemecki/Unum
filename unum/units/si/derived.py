@@ -4,7 +4,7 @@ Source: http://physics.nist.gov/cuu/Units/units.html
 """
 
 from .base import *
-from unum import unit
+from unum.core import unit
 
 __all__ = [
     "rad",  "RAD",
