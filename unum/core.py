@@ -6,6 +6,7 @@ from .exceptions import *
 
 BASIC_UNIT = 0
 
+
 def unit(symbol, definition=BASIC_UNIT, name=''):
     """
     Return a new unit represented by the string symbol.
@@ -26,34 +27,28 @@ class UnitTable(dict):
         if unitTable is not None:
             self.update(unitTable)
 
+    def new_unit(self, symbol, definition, name):
+        self[symbol] = Unit(symbol, definition, name)
+
+
+UNIT_TABLE = UnitTable()
+
 
 class Formatter(object):
-    UNIT_SEP = "."
-    """Separator between multiple units: e.g. "5 N.m". """
+    def __init__(
+            self, mul_separator='.', div_separator='/',
+            unit_format='[%s]', value_format='%s', indent=' ',
+            sort=True, hide_empty=False, auto_norm=True
+    ):
 
-    UNIT_DIV_SEP = "/"
-    """Separator between numerator and denominator.
-
-    If set to None, negative exponents are used instead.
-    """
-
-    UNIT_FORMAT = "[%s]"
-    """Format string for attached unit."""
-
-    UNIT_INDENT = " "
-    """Separator between value and unit."""
-
-    UNIT_HIDE_EMPTY = False
-    """If True, unitless unums are displayed as raw numbers."""
-
-    UNIT_SORTING = True
-    """If True, units are sorted alphabetically for display."""
-
-    VALUE_FORMAT = "%s"
-    """Format string for value."""
-
-    AUTO_NORM = True
-    """If True, normalize unums for their string representation."""
+        self._mul_separator = mul_separator
+        self._div_separator = div_separator
+        self._unit_format = unit_format
+        self._value_format = value_format
+        self._indent = indent
+        self._auto_norm = auto_norm
+        self._hide_empty = hide_empty
+        self._sort = sort
 
     def format_unit(self, unit):
         """Return a string representation of our unit."""
@@ -64,39 +59,42 @@ class Formatter(object):
                 f = str(exp)
             return f
 
-        numer, denom = '', ''
+        number, denominator = '', ''
         units = list(unit.items())
-        if self.UNIT_SORTING:
+
+        if self._sort:
             units.sort()
+
         for u, exp in units:
-            if exp > 0 or not self.UNIT_DIV_SEP:
-                if numer:
-                    numer += self.UNIT_SEP
-                numer += u + fmt(exp)
+            if exp > 0 or not self._div_separator:
+                if number:
+                    number += self._mul_separator
+                number += u + fmt(exp)
             else:
-                if denom:
-                    denom += self.UNIT_SEP
-                denom += u + fmt(-exp)
-        if denom:
-            denom = self.UNIT_DIV_SEP + denom
-            if not numer:
-                numer = '1'
-        if not numer and self.UNIT_HIDE_EMPTY:
-            result = ''
+                if denominator:
+                    denominator += self._mul_separator
+                denominator += u + fmt(-exp)
+        if denominator:
+            denominator = self._div_separator + denominator
+
+            if not number:
+                number = '1'
+
+        if not number and self._hide_empty:
+            return ''
         else:
-            result = self.UNIT_FORMAT % (numer + denom)
-        return result
+            return self._unit_format % (number + denominator)
 
     def format(self, unum):
         """Return our string representation, normalized if applicable.
 
         Normalization occurs if Unum.AUTO_NORM is set.
         """
-        if self.AUTO_NORM and not unum._normal:
+        if self._auto_norm and not unum._normal:
             unum.normalize(True)
             unum._normal = True
 
-        return self.VALUE_FORMAT % unum._value + self.UNIT_INDENT + self.format_unit(unum._unit)
+        return self._value_format % unum._value + self._indent + self.format_unit(unum._unit)
 
 
 class Unum(object):
@@ -127,17 +125,18 @@ class Unum(object):
 
     __slots__ = ('_value', '_unit', '_normal')
 
+    @classmethod
+    def set_format(cls, **kwargs):
+        cls.formatter = Formatter(**kwargs)
+
+    @classmethod
+    def reset_format(cls):
+        cls.formatter = Formatter()
+
     def __init__(self, value, unit):
         """
-        :param value: number
+        :param value: number or other object represents the mathematical value (e.g. numpy array)
         :param dict unit: {unit symbol : exponent} for example for 1 m/s2 should give {'m': 1, 's': -2}
-        :param definition:
-            None if self does not represent a unit (default),
-            0 if self represents a basic unit
-            unum equivalent to self, expressed in other unit(s) if self represents a derived unit
-
-        :param name: the unit full name if self represents a basic unit
-        :raises UnumError: if definition is a unum although unit and value do not represent a basic unit
         """
 
         self._value = value
@@ -294,6 +293,7 @@ class Unum(object):
         If there are multiple ways to do this, the units of self, then other
         are preferred, and then by maximum level.
         """
+        assert isinstance(other, Unum)
 
         if self._unit == other._unit:
             return self, other
@@ -495,11 +495,11 @@ class Unit(Unum):
 
         """
 
+        super(Unit, self).__init__(1, {symbol: 1})
+
         if symbol in Unum._unitTable:
             raise NameConflictError(symbol)
 
-        self._value = 1
-        self._unit = {symbol: 1}
         self._normal = True
 
         if definition == BASIC_UNIT:

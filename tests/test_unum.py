@@ -155,7 +155,7 @@ class FormattingTest(unittest.TestCase):
     def test_Str_ChangeUnitFormat_DisplayUnitUsingNewFormat(self):
         value = 4.5 * m ** 3
 
-        unum.Unum.formatter.UNIT_FORMAT = "{%s}"
+        unum.Unum.set_format(unit_format="{%s}")
 
         result = str(value)
 
@@ -164,7 +164,7 @@ class FormattingTest(unittest.TestCase):
     def test_Str_ChangeUnitIndent_DisplayUnitWithNewIndent(self):
         value = 4.5 * m ** 3
 
-        unum.Unum.formatter.UNIT_INDENT = "  "
+        unum.Unum.set_format(indent="  ")
 
         result = str(value)
 
@@ -173,7 +173,7 @@ class FormattingTest(unittest.TestCase):
     def test_Str_Display2DigitsAfterPoint_ReturnFormattedNumber(self):
         value = 4.545682 * m ** 3
 
-        unum.Unum.formatter.VALUE_FORMAT = "%.2f"
+        unum.Unum.set_format(value_format="%.2f")
 
         result = str(value)
 
@@ -191,7 +191,7 @@ class FormattingTest(unittest.TestCase):
 
 
     def tearDown(self):
-        unum.Unum.formatter = unum.Formatter()
+        unum.Unum.reset_format()
 
 
 
