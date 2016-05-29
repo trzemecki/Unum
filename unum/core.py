@@ -18,7 +18,7 @@ def unit(symbol, definition=BASIC_UNIT, name=''):
     >>> MB = unit("MB", 1000*KB, "megabyte")
     """
 
-    return Unum._unitTable.new_unit(symbol, definition, name)
+    return UNIT_TABLE.new_unit(symbol, definition, name)
 
 
 class UnitTable(dict):
@@ -128,8 +128,6 @@ class Unum(object):
 
     _NO_UNIT = {}
 
-    _unitTable = UnitTable()
-
     __slots__ = ('_value', '_unit', '_normal')
 
     @classmethod
@@ -163,7 +161,7 @@ class Unum(object):
         units in the interpreter.
 
         """
-        cls._unitTable.reset(unitTable)
+        UNIT_TABLE.reset(unitTable)
 
     @classmethod
     def getUnitTable(cls):
@@ -171,7 +169,7 @@ class Unum(object):
         Return a copy of the unit table.
         """
 
-        return cls._unitTable.copy()
+        return UNIT_TABLE.copy()
 
     def copy(self, normalized=False):
         """
@@ -234,7 +232,7 @@ class Unum(object):
             subst_unums, new_subst_unums = new_subst_unums, []
             for subst_dict, subst_unum in subst_unums:
                 for u, exp in list(subst_unum._unit.items()):
-                    conv_unum = Unum._unitTable[u][0]
+                    conv_unum = UNIT_TABLE[u][0]
                     if conv_unum is not None:
                         new_subst_dict = subst_dict.copy()
                         new_subst_dict[u] = exp + new_subst_dict.get(u, 0)
@@ -265,7 +263,7 @@ class Unum(object):
         :return: the maximum level of self's units
         """
         
-        return max([0] + [Unum._unitTable[u][1] for u in self._unit.keys()])
+        return max([0] + [UNIT_TABLE[u][1] for u in self._unit.keys()])
 
     def asNumber(self, other=None):
         """
