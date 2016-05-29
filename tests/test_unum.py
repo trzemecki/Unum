@@ -179,6 +179,31 @@ class FormattingTest(unittest.TestCase):
 
         self.assertEqual("4.55 [m3]", result)
 
+    def test_Str_NoDivSeparator(self):
+        value = 4.54 * m / s ** 2
+
+        unum.Unum.set_format(div_separator='')
+
+        result = str(value)
+
+        self.assertEqual("4.54 [m.s-2]", result)
+
+    def test_Str_OnyNegativeExponents_ReturnOneOnBegin(self):
+        value = 4.54 / s ** 2
+
+        result = str(value)
+
+        self.assertEqual("4.54 [1/s2]", result)
+
+    def test_HideEmpty_NoUnit_FormatOnlyValue(self):
+        value = 4.54 * m / m
+
+        unum.Unum.set_format(hide_empty=True)
+
+        result = str(value)
+
+        self.assertEqual("4.54", result)
+
     # def test_Str_NotNormalize_(self):
     #     value = 4.545682 * m / m
     #

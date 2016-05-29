@@ -38,55 +38,43 @@ class Formatter(object):
     def __init__(
             self, mul_separator='.', div_separator='/',
             unit_format='[%s]', value_format='%s', indent=' ',
-            sort=True, hide_empty=False, auto_norm=True
+            hide_empty=False, auto_norm=True
     ):
 
-        self._mul_separator = mul_separator
-        self._div_separator = div_separator
+        self._mul = mul_separator
+        self._div = div_separator
         self._unit_format = unit_format
         self._value_format = value_format
         self._indent = indent
         self._auto_norm = auto_norm
         self._hide_empty = hide_empty
-        self._sort = sort
 
     def format_unit(self, unit):
-        """Return a string representation of our unit."""
+        """
+        Return a string representation of our unit.
+        """
 
-        def fmt(exp):
-            f = ''
-            if exp != 1:
-                f = str(exp)
-            return f
+        def format_exponent(symbol, exp):
+            return symbol + (str(exp) if exp != 1 else '')
 
-        number, denominator = '', ''
-        units = list(unit.items())
+        units = sorted(unit.items())
 
-        if self._sort:
-            units.sort()
+        if not self._div:
+            return self._unit_format % self._mul.join(format_exponent(u, exp) for u, exp in units)
 
-        for u, exp in units:
-            if exp > 0 or not self._div_separator:
-                if number:
-                    number += self._mul_separator
-                number += u + fmt(exp)
-            else:
-                if denominator:
-                    denominator += self._mul_separator
-                denominator += u + fmt(-exp)
-        if denominator:
-            denominator = self._div_separator + denominator
+        result = self._div.join([
+            self._mul.join(format_exponent(u, exp) for u, exp in units if exp > 0) or '1',
+            self._mul.join(format_exponent(u, -exp) for u, exp in units if exp < 0)
+        ]).rstrip(self._div + '1')
 
-            if not number:
-                number = '1'
+        return '' if not result and self._hide_empty else self._unit_format % result
 
-        if not number and self._hide_empty:
-            return ''
-        else:
-            return self._unit_format % (number + denominator)
+    def format_value(self, value):
+        return self._value_format % value
 
     def format(self, unum):
-        """Return our string representation, normalized if applicable.
+        """
+        Return our string representation, normalized if applicable.
 
         Normalization occurs if Unum.AUTO_NORM is set.
         """
@@ -94,7 +82,7 @@ class Formatter(object):
             unum.normalize(True)
             unum._normal = True
 
-        return self._value_format % unum._value + self._indent + self.format_unit(unum._unit)
+        return self._indent.join([self.format_value(unum._value), self.format_unit(unum._unit)]).strip()
 
 
 class Unum(object):
