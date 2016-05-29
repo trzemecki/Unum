@@ -18,7 +18,7 @@ def unit(symbol, definition=BASIC_UNIT, name=''):
     >>> MB = unit("MB", 1000*KB, "megabyte")
     """
 
-    return Unit(symbol, definition, name)
+    return Unum._unitTable.new_unit(symbol, definition, name)
 
 
 class UnitTable(dict):
@@ -28,7 +28,20 @@ class UnitTable(dict):
             self.update(unitTable)
 
     def new_unit(self, symbol, definition, name):
-        self[symbol] = Unit(symbol, definition, name)
+        if symbol in self:
+            raise NameConflictError(symbol)
+
+        if definition == BASIC_UNIT:
+            conv_unum = None
+            level = 0
+        else:
+            conv_unum = Unum.uniform(definition)
+            level = conv_unum.maxLevel() + 1
+            conv_unum._normal = True
+
+        self[symbol] = conv_unum, level, name
+
+        return Unum(1, {symbol: 1}, normal=True)
 
 
 UNIT_TABLE = UnitTable()
@@ -127,7 +140,7 @@ class Unum(object):
     def reset_format(cls):
         cls.formatter = Formatter()
 
-    def __init__(self, value, unit):
+    def __init__(self, value, unit, normal=False):
         """
         :param value: number or other object represents the mathematical value (e.g. numpy array)
         :param dict unit: {unit symbol : exponent} for example for 1 m/s2 should give {'m': 1, 's': -2}
@@ -135,7 +148,7 @@ class Unum(object):
 
         self._value = value
         self._unit = dict(unit)
-        self._normal = False
+        self._normal = normal
 
     @property
     def unit(self):
@@ -474,34 +487,3 @@ class Unum(object):
 
     def __setstate__(self, state):
         self._value, self._unit, self._normal = state
-
-
-class Unit(Unum):
-    def __init__(self, symbol, definition, name=''):
-        """
-        :param str symbol: symbolic presentation of unit, e.g. m, s, kg
-        :param definition:
-            0 if self represents a basic unit
-            unum equivalent to self, expressed in other unit(s) if self represents a derived unit
-
-        :param name: the unit full name if self represents a basic unit
-        :raises UnumError: if definition is a unum although unit and value do not represent a basic unit
-
-        """
-
-        super(Unit, self).__init__(1, {symbol: 1})
-
-        if symbol in Unum._unitTable:
-            raise NameConflictError(symbol)
-
-        self._normal = True
-
-        if definition == BASIC_UNIT:
-            conv_unum = None
-            level = 0
-        else:
-            conv_unum = Unum.uniform(definition)
-            level = conv_unum.maxLevel() + 1
-            conv_unum._normal = True
-
-        Unum._unitTable[symbol] = conv_unum, level, name
