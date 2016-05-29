@@ -25,10 +25,10 @@ class UnumTest(unittest.TestCase):
             math.cos(2 * mA)
 
     def test_NewUnit_NameConflict_Throws(self):
-        unum.unit("myunit", 0, "my_new_unit")
+        unum.new_unit("myunit", 0, "my_new_unit")
 
         with self.assertRaises(unum.NameConflictError):
-            unum.unit("myunit", 0, "my_new_unit")
+            unum.new_unit("myunit", 0, "my_new_unit")
 
     def test_AsNumber_Kg_to_g_Return1000(self):
         result = kg.asNumber(g)

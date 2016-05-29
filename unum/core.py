@@ -4,18 +4,19 @@ Main Unum module.
 
 from .exceptions import *
 
+
 BASIC_UNIT = 0
 
 
-def unit(symbol, definition=BASIC_UNIT, name=''):
+def new_unit(symbol, definition=BASIC_UNIT, name=''):
     """
     Return a new unit represented by the string symbol.
 
     If conv is 0, the new unit is a base unit.
     If conv is a Unum, the new unit is a derived unit equal to conv.
 
-    >>> KB = unit("kB", 0, "kilobyte")
-    >>> MB = unit("MB", 1000*KB, "megabyte")
+    >>> KB = new_unit("kB", 0, "kilobyte")
+    >>> MB = new_unit("MB", 1000*KB, "megabyte")
     """
 
     return UNIT_TABLE.new_unit(symbol, definition, name)
@@ -36,8 +37,8 @@ class UnitTable(dict):
             level = 0
         else:
             conv_unum = Unum.uniform(definition)
-            level = conv_unum.maxLevel() + 1
             conv_unum._normal = True
+            level = conv_unum.maxLevel() + 1
 
         self[symbol] = conv_unum, level, name
 
@@ -152,25 +153,6 @@ class Unum(object):
     def unit(self):
         return self.formatter.format_unit(self._unit)
 
-    @classmethod
-    def reset(cls, unitTable=None):
-        """
-        Clear the unit table, replacing it with the new one if provided.
-
-        This is generally only useful when playing around with defining new
-        units in the interpreter.
-
-        """
-        UNIT_TABLE.reset(unitTable)
-
-    @classmethod
-    def getUnitTable(cls):
-        """
-        Return a copy of the unit table.
-        """
-
-        return UNIT_TABLE.copy()
-
     def copy(self, normalized=False):
         """
         Return a copy of this Unum, normalizing the copy if specified.
@@ -250,7 +232,7 @@ class Unum(object):
                                 best_l = new_l
         return self
 
-    def checkNoUnit(self):
+    def assert_no_unit(self):
         """
         :raises ShouldBeUnitlessError: if self has a unit
         """
@@ -287,7 +269,7 @@ class Unum(object):
                 return s._value / o._value
         else:
             s = self.copy(True)
-            s.checkNoUnit()
+            s.assert_no_unit()
             return s._value / other
 
     def matchUnits(self, other):
@@ -398,7 +380,7 @@ class Unum(object):
         other = Unum.uniform(other)
         if other._value:
             other = other.copy(True)
-            other.checkNoUnit()
+            other.assert_no_unit()
             unit = self._unit.copy()
             for u in list(self._unit.keys()):
                 unit[u] *= other._value
