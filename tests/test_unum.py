@@ -25,10 +25,10 @@ class UnumTest(unittest.TestCase):
             math.cos(2 * mA)
 
     def test_NewUnit_NameConflict_Throws(self):
-        unum.Unum.unit("myunit", 0, "my_new_unit")
+        unum.unit("myunit", 0, "my_new_unit")
 
         with self.assertRaises(unum.NameConflictError):
-            unum.Unum.unit("myunit", 0, "my_new_unit")
+            unum.unit("myunit", 0, "my_new_unit")
 
     def test_AsNumber_Kg_to_g_Return1000(self):
         result = kg.asNumber(g)
@@ -95,3 +95,101 @@ class UnumTest(unittest.TestCase):
 
         self.assertIsInstance(result, unum.Unum)
         self.assertIsInstance(result.asNumber(), numpy.ndarray)
+
+    def test_Init_GivenUnitsIsDefined_ReturnNewUnumNumberWithGivenUnits(self):
+        value = unum.Unum({'m': 1, 's': -2}, 2)
+
+        self.assertEqual(2 * m / s ** 2, value)
+
+
+
+class FormattingTest(unittest.TestCase):
+    def test_Str_ByDefault_UseDots(self):
+        value = 5.4 * m
+
+        result = str(value)
+
+        self.assertEqual("5.4 [m]", result)
+
+    def test_Str_NoUnit_DisplayEmptyBrackets(self):
+        value = 5.4 * m / m
+
+        result = str(value)
+
+        self.assertEqual("5.4 []", result)
+
+    def test_Str_TwoMultipliedUnis_JoinUnitsByDots(self):
+        value = 5.4 * N * m
+
+        result = str(value)
+
+        self.assertEqual("5.4 [N.m]", result)
+
+    def test_Str_DividedByUnit_JoinBySlash(self):
+        value = 5.4 * m / s
+
+        result = str(value)
+
+        self.assertEqual("5.4 [m/s]", result)
+
+    def test_Str_MultipliedAndDividedUnit_FirstMultiplication(self):
+        value = 4.5 * N / s * m
+
+        result = str(value)
+
+        self.assertEqual("4.5 [N.m/s]", result)
+
+    def test_Str_Powering_AddExponentAfterUnit(self):
+        value = 4.5 * m ** 3
+
+        result = str(value)
+
+        self.assertEqual("4.5 [m3]", result)
+
+    def test_Str_ChangeUnitFormat_DisplayUnitUsingNewFormat(self):
+        value = 4.5 * m ** 3
+
+        unum.Unum.UNIT_FORMAT = "{%s}"
+
+        result = str(value)
+
+        self.assertEqual("4.5 {m3}", result)
+
+    def test_Str_ChangeUnitIndent_DisplayUnitWithNewIndent(self):
+        value = 4.5 * m ** 3
+
+        unum.Unum.UNIT_INDENT = "  "
+
+        result = str(value)
+
+        self.assertEqual("4.5  [m3]", result)
+
+    def test_Str_Display2DigitsAfterPoint_ReturnFormattedNumber(self):
+        value = 4.545682 * m ** 3
+
+        unum.Unum.VALUE_FORMAT = "%.2f"
+
+        result = str(value)
+
+        self.assertEqual("4.55 [m3]", result)
+
+    # def test_Str_NotNormalize_(self):
+    #     value = 4.545682 * m / m
+    #
+    #     unum.Unum.AUTO_NORM = False
+    #
+    #     result = str(value)
+    #
+    #     self.assertEqual("4.55 [m3]", result)
+
+
+
+    def tearDown(self):
+        unum.Unum.UNIT_FORMAT = "[%s]"
+        unum.Unum.UNIT_INDENT = " "
+        unum.Unum.VALUE_FORMAT = "%s"
+
+
+
+
+

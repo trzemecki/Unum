@@ -4,7 +4,7 @@ Main Unum module.
 
 from .exceptions import *
 
-BASE_UNIT = 0
+BASIC_UNIT = 0
 
 
 def uarray(array_like, *args, **kwargs):
@@ -39,7 +39,7 @@ def unitless(*values):
     return (value.asNumber(unit) for value in values)
 
 
-def unit(symbol, definiton=BASE_UNIT, name=''):
+def unit(symbol, definition=BASIC_UNIT, name=''):
     """
     Return a new unit represented by the string symbol.
 
@@ -50,7 +50,7 @@ def unit(symbol, definiton=BASE_UNIT, name=''):
     >>> MB = unit("MB", 1000*KB, "megabyte")
     """
 
-    return Unum({symbol: 1}, 1, definiton, name)
+    return Unit(symbol, definition, name)
 
 
 class Unum(object):
@@ -100,9 +100,9 @@ class Unum(object):
 
     __slots__ = ('_value', '_unit', '_normal')
 
-    def __init__(self, unit, value=1, definition=None, name=''):
+    def __init__(self, unit, value):
         """
-        :param unit: a dictionary of {unit symbol : exponent}
+        :param dict unit: {unit symbol : exponent} for example for 1 m/s2 should give {'m': 1, 's': -2}
         :param value: number
         :param definition:
             None if self does not represent a unit (default),
@@ -115,26 +115,7 @@ class Unum(object):
 
         self._value = value
         self._unit = unit
-
-        if definition is None:
-            self._normal = False
-        else:
-            unit_key = list(unit.keys())[0]
-            if unit_key in Unum._unitTable:
-                raise NameConflictError(unit_key)
-            self._normal = True
-            if isinstance(definition, int) and definition == 0:
-                conv_unum = None
-                level = 0
-            else:
-                if value == 0 or len(unit) != 1 or list(unit.values())[0] != 1:
-                    raise NonBasicUnitError(self)
-                conv_unum = Unum.coerceToUnum(definition) / value
-                level = conv_unum.maxLevel() + 1
-                conv_unum._normal = True
-            Unum._unitTable[unit_key] = conv_unum, level, name
-
-    unit = staticmethod(unit)
+        self._normal = False
 
     @classmethod
     def reset(cls, unitTable=None):
@@ -518,3 +499,35 @@ class Unum(object):
 
     def __setstate__(self, state):
         self._value, self._unit, self._normal = state
+
+
+class Unit(Unum):
+    def __init__(self, symbol, definition, name=''):
+        """
+        :param dict unit: {unit symbol : exponent} for example for 1 m/s2 should give {'m': 1, 's': -2}
+        :param value: number
+        :param definition:
+            None if self does not represent a unit (default),
+            0 if self represents a basic unit
+            unum equivalent to self, expressed in other unit(s) if self represents a derived unit
+
+        :param name: the unit full name if self represents a basic unit
+        :raises UnumError: if definition is a unum although unit and value do not represent a basic unit
+        """
+
+        if symbol in Unum._unitTable:
+            raise NameConflictError(symbol)
+
+        self._value = 1
+        self._unit = {symbol: 1}
+        self._normal = True
+
+        if definition == BASIC_UNIT:
+            conv_unum = None
+            level = 0
+        else:
+            conv_unum = Unum.coerceToUnum(definition)
+            level = conv_unum.maxLevel() + 1
+            conv_unum._normal = True
+
+        Unum._unitTable[symbol] = conv_unum, level, name
