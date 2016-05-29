@@ -97,7 +97,7 @@ class UnumTest(unittest.TestCase):
         self.assertIsInstance(result.asNumber(), numpy.ndarray)
 
     def test_Init_GivenUnitsIsDefined_ReturnNewUnumNumberWithGivenUnits(self):
-        value = unum.Unum({'m': 1, 's': -2}, 2)
+        value = unum.Unum(2, {'m': 1, 's': -2})
 
         self.assertEqual(2 * m / s ** 2, value)
 
@@ -107,8 +107,6 @@ class UnumTest(unittest.TestCase):
         result = +value
 
         self.assertEqual(result, value)
-
-
 
 
 class FormattingTest(unittest.TestCase):
@@ -157,7 +155,7 @@ class FormattingTest(unittest.TestCase):
     def test_Str_ChangeUnitFormat_DisplayUnitUsingNewFormat(self):
         value = 4.5 * m ** 3
 
-        unum.Unum.UNIT_FORMAT = "{%s}"
+        unum.Unum.formatter.UNIT_FORMAT = "{%s}"
 
         result = str(value)
 
@@ -166,7 +164,7 @@ class FormattingTest(unittest.TestCase):
     def test_Str_ChangeUnitIndent_DisplayUnitWithNewIndent(self):
         value = 4.5 * m ** 3
 
-        unum.Unum.UNIT_INDENT = "  "
+        unum.Unum.formatter.UNIT_INDENT = "  "
 
         result = str(value)
 
@@ -175,7 +173,7 @@ class FormattingTest(unittest.TestCase):
     def test_Str_Display2DigitsAfterPoint_ReturnFormattedNumber(self):
         value = 4.545682 * m ** 3
 
-        unum.Unum.VALUE_FORMAT = "%.2f"
+        unum.Unum.formatter.VALUE_FORMAT = "%.2f"
 
         result = str(value)
 
@@ -193,9 +191,7 @@ class FormattingTest(unittest.TestCase):
 
 
     def tearDown(self):
-        unum.Unum.UNIT_FORMAT = "[%s]"
-        unum.Unum.UNIT_INDENT = " "
-        unum.Unum.VALUE_FORMAT = "%s"
+        unum.Unum.formatter = unum.Formatter()
 
 
 
