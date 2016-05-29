@@ -101,6 +101,14 @@ class UnumTest(unittest.TestCase):
 
         self.assertEqual(2 * m / s ** 2, value)
 
+    def test_Positive_Always_ReturnEqualUnum(self):
+        value = 2 * m
+
+        result = +value
+
+        self.assertEqual(result, value)
+
+
 
 
 class FormattingTest(unittest.TestCase):

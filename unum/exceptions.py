@@ -22,7 +22,7 @@ class IncompatibleUnitsError(TypeError):
 
     def __init__(self, unit1, unit2):
         TypeError.__init__(
-            self, "%s can't be converted to %s" % (unit1.strUnit(), unit2.strUnit())
+            self, "%s can't be converted to %s" % (unit1.unit, unit2.unit)
         )
 
 

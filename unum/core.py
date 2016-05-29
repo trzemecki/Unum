@@ -21,7 +21,7 @@ def uarray(array_like, *args, **kwargs):
     """
     from numpy import array
 
-    return Unum.coerceToUnum(array(array_like, *args, **kwargs))
+    return Unum.uniform(array(array_like, *args, **kwargs))
 
 
 def with_unit(value, unit):
@@ -53,15 +53,14 @@ def unit(symbol, definition=BASIC_UNIT, name=''):
     return Unit(symbol, definition, name)
 
 
-class Unum(object):
-    """
-    Encapsulates a value attached to a unit.
+class UnitTable(dict):
+    def reset(self, unitTable=None):
+        self.clear()
+        if unitTable is not None:
+            self.update(unitTable)
 
-    Implements arithmetic operators, dynamic unit consistency checking, and
-    string representation.
-    """
 
-    # TODO consider move it to other class "Formatter"
+class Formatter(object):
     UNIT_SEP = "."
     """Separator between multiple units: e.g. "5 N.m". """
 
@@ -89,6 +88,72 @@ class Unum(object):
     AUTO_NORM = True
     """If True, normalize unums for their string representation."""
 
+    def format_unit(self, unit):
+        """Return a string representation of our unit."""
+
+        def fmt(exp):
+            f = ''
+            if exp != 1:
+                f = str(exp)
+            return f
+
+        numer, denom = '', ''
+        units = list(unit.items())
+        if self.UNIT_SORTING:
+            units.sort()
+        for u, exp in units:
+            if exp > 0 or not self.UNIT_DIV_SEP:
+                if numer:
+                    numer += self.UNIT_SEP
+                numer += u + fmt(exp)
+            else:
+                if denom:
+                    denom += self.UNIT_SEP
+                denom += u + fmt(-exp)
+        if denom:
+            denom = self.UNIT_DIV_SEP + denom
+            if not numer:
+                numer = '1'
+        if not numer and self.UNIT_HIDE_EMPTY:
+            result = ''
+        else:
+            result = self.UNIT_FORMAT % (numer + denom)
+        return result
+
+    def format(self, unum):
+        """Return our string representation, normalized if applicable.
+
+        Normalization occurs if Unum.AUTO_NORM is set.
+        """
+        if self.AUTO_NORM and not unum._normal:
+            unum.normalize(True)
+            unum._normal = True
+
+        return self.VALUE_FORMAT % unum._value + self.UNIT_INDENT + self.format_unit(unum._unit)
+
+
+class Unum(object):
+    @staticmethod
+    def uniform(value):
+        """
+        Return a unitless Unum if value is a number.
+
+        If value is a Unum already, it is returned unmodified.
+        """
+        if isinstance(value, Unum):
+            return value
+        else:
+            return Unum(Unum._NO_UNIT, value)
+
+    """
+    Encapsulates a value attached to a unit.
+
+    Implements arithmetic operators, dynamic unit consistency checking, and
+    string representation.
+    """
+
+    formatter = Formatter()
+
     # -- internal constants ------------------------------------------
     _NO_UNIT = {}
 
@@ -96,7 +161,7 @@ class Unum(object):
     # unit dictionary :
     #  the key is the unit string
     #  the value is a tuple (conversion unum, level, name)
-    _unitTable = {}
+    _unitTable = UnitTable()
 
     __slots__ = ('_value', '_unit', '_normal')
 
@@ -114,8 +179,12 @@ class Unum(object):
         """
 
         self._value = value
-        self._unit = unit
+        self._unit = dict(unit)
         self._normal = False
+
+    @property
+    def unit(self):
+        return self.formatter.format_unit(self._unit)
 
     @classmethod
     def reset(cls, unitTable=None):
@@ -126,8 +195,7 @@ class Unum(object):
         units in the interpreter.
 
         """
-
-        cls._unitTable = {} if unitTable is None else unitTable
+        cls._unitTable.reset(unitTable)
 
     @classmethod
     def getUnitTable(cls):
@@ -157,7 +225,7 @@ class Unum(object):
         Raises NonBasicUnitError if other isn't a basic unit.
         """
 
-        other = Unum.coerceToUnum(other)
+        other = Unum.uniform(other)
 
         if (other._value == 0) or (other != Unum(other._unit, 1)):
             raise NonBasicUnitError(other)
@@ -188,6 +256,7 @@ class Unum(object):
 
         If forDisplay is True, then prefer a single unit to no unit.
         """
+        
         # TODO: example of forDisplay.
         # TODO: simplify normalize so it fits in 80 columns...
 
@@ -227,6 +296,7 @@ class Unum(object):
         """
         :return: the maximum level of self's units
         """
+        
         return max([0] + [Unum._unitTable[u][1] for u in self._unit.keys()])
 
     def matchUnits(self, other):
@@ -249,42 +319,45 @@ class Unum(object):
 
         s = self.copy()
         o = other.copy()
+        
         s_length, o_length = len(s._unit), len(o._unit)
+        
         revert = (s_length > o_length or
                   (s_length == o_length and s.maxLevel() < o.maxLevel()))
+        
         if revert:
             s, o = o, s
+            
         target_unum = Unum(s._unit, 1)
         o /= target_unum
         o.normalize()
+        
         if o._unit:
             raise IncompatibleUnitsError(self, other)
+        
         o._unit = s._unit
+        
         if revert:
             s, o = o, s
+            
         return s, o
 
-    # TODO: could support in-place operators for 2.5 and higher.
-
-    # Arithmetic operations.
-    # These raise IncompatibleUnitsError if the operands have incompatible units.
     def __add__(self, other):
-        s, o = self.matchUnits(Unum.coerceToUnum(other))
+        s, o = self.matchUnits(Unum.uniform(other))
         return Unum(s._unit, s._value + o._value)
 
     def __sub__(self, other):
-        s, o = self.matchUnits(Unum.coerceToUnum(other))
+        s, o = self.matchUnits(Unum.uniform(other))
         return Unum(s._unit, s._value - o._value)
 
     def __pos__(self):
-        # TODO: is it really beneficial to share the unit dictionary?
-        return Unum(self._unit.copy(), self._value)
+        return Unum(self._unit, self._value)
 
     def __neg__(self):
-        return Unum(self._unit.copy(), -self._value)
+        return Unum(self._unit, -self._value)
 
     def __mul__(self, other):
-        other = Unum.coerceToUnum(other)
+        other = Unum.uniform(other)
         if not self._unit:
             unit = other._unit
         elif not other._unit:
@@ -300,7 +373,7 @@ class Unum(object):
         return Unum(unit, self._value * other._value)
 
     def __div__(self, other):
-        other = Unum.coerceToUnum(other)
+        other = Unum.uniform(other)
         if not other._unit:
             unit = self._unit
         else:
@@ -316,7 +389,7 @@ class Unum(object):
     __truediv__ = __div__  # Python 3.0 compatibility.
 
     def __floordiv__(self, other):
-        other = Unum.coerceToUnum(other)
+        other = Unum.uniform(other)
         if not other._unit:
             unit = self._unit
         else:
@@ -330,7 +403,7 @@ class Unum(object):
         return Unum(unit, self._value // other._value)
 
     def __pow__(self, other):
-        other = Unum.coerceToUnum(other)
+        other = Unum.uniform(other)
         if other._value:
             other = other.copy(True)
             other.checkNoUnit()
@@ -342,31 +415,31 @@ class Unum(object):
         return Unum(unit, self._value ** other._value)
 
     def __lt__(self, other):
-        s, o = self.matchUnits(Unum.coerceToUnum(other))
+        s, o = self.matchUnits(Unum.uniform(other))
         return s._value < o._value
 
     def __le__(self, other):
-        s, o = self.matchUnits(Unum.coerceToUnum(other))
+        s, o = self.matchUnits(Unum.uniform(other))
         return s._value <= o._value
 
     def __gt__(self, other):
-        s, o = self.matchUnits(Unum.coerceToUnum(other))
+        s, o = self.matchUnits(Unum.uniform(other))
         return s._value > o._value
 
     def __ge__(self, other):
-        s, o = self.matchUnits(Unum.coerceToUnum(other))
+        s, o = self.matchUnits(Unum.uniform(other))
         return s._value >= o._value
 
     def __eq__(self, other):
-        s, o = self.matchUnits(Unum.coerceToUnum(other))
+        s, o = self.matchUnits(Unum.uniform(other))
         return s._value == o._value
 
     def __ne__(self, other):
-        s, o = self.matchUnits(Unum.coerceToUnum(other))
+        s, o = self.matchUnits(Unum.uniform(other))
         return s._value != o._value
 
     def __abs__(self):
-        return Unum(self._unit.copy(), abs(self._value))
+        return Unum(self._unit, abs(self._value))
 
     def asNumber(self, other=None):
         """
@@ -406,93 +479,39 @@ class Unum(object):
         return float(self.asNumber(1))
 
     def __radd__(self, other):
-        return Unum.coerceToUnum(other).__add__(self)
+        return Unum.uniform(other).__add__(self)
 
     def __rsub__(self, other):
-        return Unum.coerceToUnum(other).__sub__(self)
+        return Unum.uniform(other).__sub__(self)
 
     def __rmul__(self, other):
-        return Unum.coerceToUnum(other).__mul__(self)
+        return Unum.uniform(other).__mul__(self)
 
     def __rdiv__(self, other):
-        return Unum.coerceToUnum(other).__div__(self)
+        return Unum.uniform(other).__div__(self)
 
     __rtruediv__ = __rdiv__  # Python 3.0 compatibility.
 
     def __rfloordiv__(self, other):
-        return Unum.coerceToUnum(other).__floordiv__(self)
+        return Unum.uniform(other).__floordiv__(self)
 
     def __rpow__(self, other):
-        return Unum.coerceToUnum(other).__pow__(self)
+        return Unum.uniform(other).__pow__(self)
 
     def __getitem__(self, index):
         return Unum(self._unit, self._value[index])
 
     def __setitem__(self, index, value):
-        u = Unum.coerceToUnum(value)
+        u = Unum.uniform(value)
         self._value[index] = u.asNumber(Unum(self._unit, 1))
 
     def __len__(self):
         return len(self._value)
 
-    # -- String representation methods -------------------------------
-    def strUnit(self):
-        """Return a string representation of our unit."""
-
-        def fmt(exp):
-            f = ''
-            if exp != 1:
-                f = str(exp)
-            return f
-
-        numer, denom = '', ''
-        units = list(self._unit.items())
-        if Unum.UNIT_SORTING:
-            units.sort()
-        for u, exp in units:
-            if exp > 0 or not Unum.UNIT_DIV_SEP:
-                if numer:
-                    numer += Unum.UNIT_SEP
-                numer += u + fmt(exp)
-            else:
-                if denom:
-                    denom += Unum.UNIT_SEP
-                denom += u + fmt(-exp)
-        if denom:
-            denom = Unum.UNIT_DIV_SEP + denom
-            if not numer:
-                numer = '1'
-        if not numer and Unum.UNIT_HIDE_EMPTY:
-            result = ''
-        else:
-            result = Unum.UNIT_FORMAT % (numer + denom)
-        return result
-
     def __str__(self):
-        """Return our string representation, normalized if applicable.
-
-        Normalization occurs if Unum.AUTO_NORM is set.
-        """
-        if Unum.AUTO_NORM and not self._normal:
-            self.normalize(True)
-            self._normal = True
-        return (Unum.VALUE_FORMAT % self._value +
-                Unum.UNIT_INDENT +
-                self.strUnit())
+        return self.formatter.format(self)
 
     __repr__ = __str__
-
-    @staticmethod
-    def coerceToUnum(value):
-        """
-        Return a unitless Unum if value is a number.
-
-        If value is a Unum already, it is returned unmodified.
-        """
-        if isinstance(value, Unum):
-            return value
-        else:
-            return Unum(Unum._NO_UNIT, value)
 
     def __getstate__(self):
         return self._value, self._unit, self._normal
@@ -526,7 +545,7 @@ class Unit(Unum):
             conv_unum = None
             level = 0
         else:
-            conv_unum = Unum.coerceToUnum(definition)
+            conv_unum = Unum.uniform(definition)
             level = conv_unum.maxLevel() + 1
             conv_unum._normal = True
 
