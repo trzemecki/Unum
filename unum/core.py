@@ -2,24 +2,13 @@
 Main Unum module.
 """
 
+import collections
 from .exceptions import *
 
 
 BASIC_UNIT = 0
 
-
-def new_unit(symbol, definition=BASIC_UNIT, name=''):
-    """
-    Return a new unit represented by the string symbol.
-
-    If conv is 0, the new unit is a base unit.
-    If conv is a Unum, the new unit is a derived unit equal to conv.
-
-    >>> KB = new_unit("kB", 0, "kilobyte")
-    >>> MB = new_unit("MB", 1000*KB, "megabyte")
-    """
-
-    return UNIT_TABLE.new_unit(symbol, definition, name)
+UnitDefinition = collections.namedtuple('UnitDefinition', 'definition,level,name')
 
 
 class UnitTable(dict):
@@ -27,6 +16,15 @@ class UnitTable(dict):
         self.clear()
         if unitTable is not None:
             self.update(unitTable)
+
+    def get_definition(self, symbol):
+        return self[symbol].definition
+
+    def is_basic(self, symbol):
+        return self[symbol].definition is None
+
+    def is_derived(self, symbol):
+        return not self.is_basic(symbol)
 
     def new_unit(self, symbol, definition, name):
         if symbol in self:
@@ -40,12 +38,14 @@ class UnitTable(dict):
             conv_unum._normal = True
             level = conv_unum.maxLevel() + 1
 
-        self[symbol] = conv_unum, level, name
+        self[symbol] = UnitDefinition(conv_unum, level, name)
 
         return Unum(1, {symbol: 1}, normal=True)
 
 
 UNIT_TABLE = UnitTable()
+
+new_unit = UNIT_TABLE.new_unit
 
 
 class Formatter(object):
@@ -103,6 +103,13 @@ class Formatter(object):
             unum._normal = True
 
         return self._indent.join([self.format_value(unum._value), self.format_unit(unum._unit)]).strip()
+
+
+def uniform_unum(func):
+    def decorator(self, value):
+        return func(self, Unum.uniform(value))
+
+    return decorator
 
 
 class Unum(object):
@@ -165,7 +172,8 @@ class Unum(object):
 
         return result
 
-    def asUnit(self, other):
+    @uniform_unum
+    def cast_unit(self, other):
         """
         Return a Unum with this Unum's value and the units of the given Unum.
 
@@ -173,9 +181,7 @@ class Unum(object):
         Raises NonBasicUnitError if other isn't a basic unit.
         """
 
-        other = Unum.uniform(other)
-
-        if (other._value == 0) or (other != Unum(1, other._unit)):
+        if not other.is_basic():
             raise NonBasicUnitError(other)
 
         s, o = self.matchUnits(other)
@@ -183,6 +189,9 @@ class Unum(object):
         res._normal = True
 
         return res
+
+    def is_basic(self):
+        return self._value == 1
 
     def replaced(self, u, conv_unum):
         """
@@ -209,22 +218,17 @@ class Unum(object):
         # TODO: simplify normalize so it fits in 80 columns...
 
         best_l = len(self._unit)
-        new_subst_unums = [({}, +self)]
+        new_subst_unums = [({}, self.copy())]
         while new_subst_unums:
             subst_unums, new_subst_unums = new_subst_unums, []
             for subst_dict, subst_unum in subst_unums:
-                for u, exp in list(subst_unum._unit.items()):
-                    conv_unum = UNIT_TABLE[u][0]
-                    if conv_unum is not None:
+                for symbol, exponent in list(subst_unum._unit.items()):
+                    if UNIT_TABLE.is_derived(symbol):
                         new_subst_dict = subst_dict.copy()
-                        new_subst_dict[u] = exp + new_subst_dict.get(u, 0)
-                        is_new = True
-                        for subst_dict2, subst_unum2 in new_subst_unums:
-                            if new_subst_dict == subst_dict2:
-                                is_new = False
-                                break
-                        if is_new:
-                            s = subst_unum.replaced(u, conv_unum)
+                        new_subst_dict[symbol] = exponent + new_subst_dict.get(symbol, 0)
+
+                        if all(new_subst_dict != subst_dict2 for subst_dict2, subst_unum2 in new_subst_unums):
+                            s = subst_unum.replaced(symbol, UNIT_TABLE.get_definition(symbol))
                             new_subst_unums.append((new_subst_dict, s))
                             new_l = len(s._unit)
                             if new_l < best_l and not (forDisplay and new_l == 0 and best_l == 1):
@@ -245,7 +249,7 @@ class Unum(object):
         :return: the maximum level of self's units
         """
         
-        return max([0] + [UNIT_TABLE[u][1] for u in self._unit.keys()])
+        return max([0] + [UNIT_TABLE[symbol].level for symbol in self._unit])
 
     def asNumber(self, other=None):
         """
@@ -316,22 +320,24 @@ class Unum(object):
 
         return s, o
 
+    @uniform_unum
     def __add__(self, other):
-        s, o = self.matchUnits(Unum.uniform(other))
+        s, o = self.matchUnits(other)
         return Unum(s._value + o._value, s._unit)
 
+    @uniform_unum
     def __sub__(self, other):
-        s, o = self.matchUnits(Unum.uniform(other))
+        s, o = self.matchUnits(other)
         return Unum(s._value - o._value, s._unit)
 
     def __pos__(self):
-        return Unum(self._value, self._unit)
+        return self
 
     def __neg__(self):
         return Unum(-self._value, self._unit)
 
+    @uniform_unum
     def __mul__(self, other):
-        other = Unum.uniform(other)
         if not self._unit:
             unit = other._unit
         elif not other._unit:
@@ -346,8 +352,8 @@ class Unum(object):
                     del unit[u]
         return Unum(self._value * other._value, unit)
 
+    @uniform_unum
     def __div__(self, other):
-        other = Unum.uniform(other)
         if not other._unit:
             unit = self._unit
         else:
@@ -362,8 +368,8 @@ class Unum(object):
 
     __truediv__ = __div__  # Python 3.0 compatibility.
 
+    @uniform_unum
     def __floordiv__(self, other):
-        other = Unum.uniform(other)
         if not other._unit:
             unit = self._unit
         else:
@@ -376,8 +382,8 @@ class Unum(object):
                     del unit[u]
         return Unum(self._value // other._value, unit)
 
+    @uniform_unum
     def __pow__(self, other):
-        other = Unum.uniform(other)
         if other._value:
             other = other.copy(True)
             other.assert_no_unit()
@@ -388,28 +394,34 @@ class Unum(object):
             unit = Unum._NO_UNIT
         return Unum(self._value ** other._value, unit)
 
+    @uniform_unum
     def __lt__(self, other):
-        s, o = self.matchUnits(Unum.uniform(other))
+        s, o = self.matchUnits(other)
         return s._value < o._value
 
+    @uniform_unum
     def __le__(self, other):
-        s, o = self.matchUnits(Unum.uniform(other))
+        s, o = self.matchUnits(other)
         return s._value <= o._value
 
+    @uniform_unum
     def __gt__(self, other):
-        s, o = self.matchUnits(Unum.uniform(other))
+        s, o = self.matchUnits(other)
         return s._value > o._value
 
+    @uniform_unum
     def __ge__(self, other):
-        s, o = self.matchUnits(Unum.uniform(other))
+        s, o = self.matchUnits(other)
         return s._value >= o._value
 
+    @uniform_unum
     def __eq__(self, other):
-        s, o = self.matchUnits(Unum.uniform(other))
+        s, o = self.matchUnits(other)
         return s._value == o._value
 
+    @uniform_unum
     def __ne__(self, other):
-        s, o = self.matchUnits(Unum.uniform(other))
+        s, o = self.matchUnits(other)
         return s._value != o._value
 
     def __abs__(self):
@@ -427,32 +439,37 @@ class Unum(object):
     def __float__(self):
         return float(self.asNumber(1))
 
+    @uniform_unum
     def __radd__(self, other):
-        return Unum.uniform(other).__add__(self)
+        return other.__add__(self)
 
+    @uniform_unum
     def __rsub__(self, other):
-        return Unum.uniform(other).__sub__(self)
+        return other.__sub__(self)
 
+    @uniform_unum
     def __rmul__(self, other):
-        return Unum.uniform(other).__mul__(self)
+        return other.__mul__(self)
 
+    @uniform_unum
     def __rdiv__(self, other):
-        return Unum.uniform(other).__div__(self)
+        return other.__div__(self)
 
     __rtruediv__ = __rdiv__  # Python 3.0 compatibility.
 
+    @uniform_unum
     def __rfloordiv__(self, other):
-        return Unum.uniform(other).__floordiv__(self)
+        return other.__floordiv__(self)
 
+    @uniform_unum
     def __rpow__(self, other):
-        return Unum.uniform(other).__pow__(self)
+        return other.__pow__(self)
 
     def __getitem__(self, index):
         return Unum(self._value[index], self._unit)
 
     def __setitem__(self, index, value):
-        u = Unum.uniform(value)
-        self._value[index] = u.asNumber(Unum(1, self._unit))
+        self._value[index] = Unum.uniform(value).asNumber(Unum(1, self._unit))
 
     def __len__(self):
         return len(self._value)

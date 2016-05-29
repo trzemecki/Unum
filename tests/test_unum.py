@@ -45,16 +45,16 @@ class UnumTest(unittest.TestCase):
         self.assertTrue(N * m / s == W)
 
     def test_AsUnit_NoneSIUnitToW_ReturnWTimesRatio(self):
-        result = (N * km / s).asUnit(W)
+        result = (N * km / s).cast_unit(W)
 
         self.assertEqual(result, 1000 * W)
 
     def test_AsUnit_UnitNotMatch_Throws(self):
         with self.assertRaises(unum.IncompatibleUnitsError):
-            S.asUnit(h)
+            S.cast_unit(h)
             
     def test_AsUnit_HoursToSeconds_Return3600s(self):
-        result = h.asUnit(s)
+        result = h.cast_unit(s)
 
         self.assertEqual(result, 3600 * s)
 
@@ -107,6 +107,29 @@ class UnumTest(unittest.TestCase):
         result = +value
 
         self.assertEqual(result, value)
+
+    def test_CastUnit_m_to_cm_ReturnUnumWithCMUnit(self):
+        value = 5 * m
+
+        result = value.cast_unit(cm)
+
+        self.assertEqual("500.0 [cm]", str(result))
+
+    def test_CastUnit_NotBasicUnit_Throws(self):
+        value = 5 * m
+
+        with self.assertRaises(unum.NonBasicUnitError):
+            value.cast_unit(2 * cm)
+
+    def test_Normalize_J_over_m_ReturnValueInN(self):
+        value = 10 * J / m
+
+        unum.Unum.set_format(auto_norm=False)
+
+        value.normalize()
+
+        self.assertEqual("[N]", value.unit)
+
 
 
 class FormattingTest(unittest.TestCase):
