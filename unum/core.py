@@ -54,20 +54,26 @@ class Formatter(object):
         Return a string representation of our unit.
         """
 
-        def format_exponent(symbol, exp):
-            return symbol + (str(exp) if exp != 1 else '')
-
         units = sorted(unit.items())
 
-        if not self._div:
-            return self._unit_format % self._mul.join(format_exponent(u, exp) for u, exp in units)
+        formatted = (
+            self._format_only_mul_separator(units) if not self._div else
+            self._format_with_div_separator(units)
+        )
 
-        result = self._div.join([
-            self._mul.join(format_exponent(u, exp) for u, exp in units if exp > 0) or '1',
-            self._mul.join(format_exponent(u, -exp) for u, exp in units if exp < 0)
+        return '' if not formatted and self._hide_empty else self._unit_format % formatted
+
+    def _format_only_mul_separator(self, units):
+        return self._mul.join(self._format_exponent(u, exp) for u, exp in units)
+
+    def _format_with_div_separator(self, units):
+        return self._div.join([
+            self._mul.join(self._format_exponent(u, exp) for u, exp in units if exp > 0) or '1',
+            self._mul.join(self._format_exponent(u, -exp) for u, exp in units if exp < 0)
         ]).rstrip(self._div + '1')
 
-        return '' if not result and self._hide_empty else self._unit_format % result
+    def _format_exponent(self, symbol, exp):
+        return symbol + (str(exp) if exp != 1 else '')
 
     def format_value(self, value):
         return self._value_format % value

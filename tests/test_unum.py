@@ -204,6 +204,16 @@ class FormattingTest(unittest.TestCase):
 
         self.assertEqual("4.54", result)
 
+    def test_HideEmpty_NoUnitAndNoDivSeparator_FromatOnlyValue(self):
+        value = 4.54 * m / m
+
+        unum.Unum.set_format(hide_empty=True, div_separator='')
+
+        result = str(value)
+
+        self.assertEqual("4.54", result)
+
+
     # def test_Str_NotNormalize_(self):
     #     value = 4.545682 * m / m
     #
