@@ -99,7 +99,7 @@ class Formatter(object):
         Normalization occurs if Unum.AUTO_NORM is set.
         """
         if self._auto_norm and not unum._normal:
-            unum.normalize(True)
+            unum.simplify_unit(True)
             unum._normal = True
 
         return self._indent.join([self.format_value(unum._value), self.format_unit(unum._unit)]).strip()
@@ -168,7 +168,7 @@ class Unum(object):
         result = Unum(self._value, self._unit.copy())
 
         if normalized:
-            result.normalize()
+            result.simplify_unit()
 
         return result
 
@@ -193,18 +193,20 @@ class Unum(object):
     def is_basic(self):
         return self._value == 1
 
-    def replaced(self, u, conv_unum):
+    def replaced(self, symbol, definition):
         """
         Return a Unum with the string u replaced by the Unum conv_unum.
 
         If u is absent from self, a copy of self is returned.
         """
 
-        res = self.copy() * conv_unum ** self._unit[u]
-        del res._unit[u]
+        exponent = self._unit[symbol]
+
+        res = self.copy() * definition ** exponent
+        del res._unit[symbol]
         return res
 
-    def normalize(self, forDisplay=False):
+    def simplify_unit(self, forDisplay=False):
         """
         Normalize our units IN PLACE and return self.
 
@@ -217,24 +219,28 @@ class Unum(object):
         # TODO: example of forDisplay.
         # TODO: simplify normalize so it fits in 80 columns...
 
-        best_l = len(self._unit)
+        previous_length = len(self._unit)
         new_subst_unums = [({}, self.copy())]
+
         while new_subst_unums:
             subst_unums, new_subst_unums = new_subst_unums, []
             for subst_dict, subst_unum in subst_unums:
-                for symbol, exponent in list(subst_unum._unit.items()):
-                    if UNIT_TABLE.is_derived(symbol):
-                        new_subst_dict = subst_dict.copy()
-                        new_subst_dict[symbol] = exponent + new_subst_dict.get(symbol, 0)
+                for symbol, exponent in subst_unum._derived_units():
+                    new_subst_dict = subst_dict.copy()
+                    new_subst_dict[symbol] = exponent + new_subst_dict.get(symbol, 0)
 
-                        if all(new_subst_dict != subst_dict2 for subst_dict2, subst_unum2 in new_subst_unums):
-                            s = subst_unum.replaced(symbol, UNIT_TABLE.get_definition(symbol))
-                            new_subst_unums.append((new_subst_dict, s))
-                            new_l = len(s._unit)
-                            if new_l < best_l and not (forDisplay and new_l == 0 and best_l == 1):
-                                self._value, self._unit = s._value, s._unit
-                                best_l = new_l
+                    if all(new_subst_dict != subst_dict2 for subst_dict2, subst_unum2 in new_subst_unums):
+                        reduced = subst_unum.replaced(symbol, UNIT_TABLE.get_definition(symbol)) # replace by definition
+                        new_subst_unums.append((new_subst_dict, reduced))
+
+                        new_length = len(reduced._unit)
+                        if new_length < previous_length and not (forDisplay and new_length == 0 and previous_length == 1):
+                            self._value, self._unit = reduced._value, reduced._unit
+                            previous_length = new_length
         return self
+
+    def _derived_units(self):
+        return [(symbol, self._unit[symbol]) for symbol in self._unit if UNIT_TABLE.is_derived(symbol)]
 
     def assert_no_unit(self):
         """
@@ -308,7 +314,7 @@ class Unum(object):
 
         target_unum = Unum(1, s._unit)
         o /= target_unum
-        o.normalize()
+        o.simplify_unit()
 
         if o._unit:
             raise IncompatibleUnitsError(self, other)

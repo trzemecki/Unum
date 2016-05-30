@@ -126,10 +126,58 @@ class UnumTest(unittest.TestCase):
 
         unum.Unum.set_format(auto_norm=False)
 
-        value.normalize()
+        value.simplify_unit()
 
         self.assertEqual("[N]", value.unit)
 
+    def test_Normalize_J_over_m2kg_Return_1_over_s2(self):
+        value = 10 * J / kg / m ** 2
+
+        unum.Unum.set_format(auto_norm=False)
+
+        value.simplify_unit()
+
+        self.assertEqual("[1/s2]", value.unit)
+
+    def test_Normalize_SameUnitWithDifferentPrefix_ReturnUnitless(self):
+        value = 10 * kg / g
+
+        unum.Unum.set_format(auto_norm=False)
+
+        value.simplify_unit()
+
+        self.assertEqual("[]", value.unit)
+        
+    def test_Normalize_NamedDimensionlessUnitForDisplay_ReturnWithUnit(self):
+        value = 10 * rad
+
+        unum.Unum.set_format(auto_norm=False)
+
+        value.simplify_unit(forDisplay=True)
+
+        self.assertEqual("[rad]", value.unit)
+
+    def test_SimplifyUnit_J_over_cm_ReturnN(self):
+        value = 14 * J / cm
+
+        unum.Unum.set_format(auto_norm=False)
+
+        value.simplify_unit()
+
+        self.assertEqual("[N]", value.unit)
+
+    def test_SimplifyUnit_SamePrimaryUnit_ReturnUnitless(self):
+        value = 5 * Hz * s
+
+        unum.Unum.set_format(auto_norm=False)
+
+        value.simplify_unit()
+
+        self.assertEqual("[]", value.unit)
+
+
+    def tearDown(self):
+        unum.Unum.reset_format()
 
 
 class FormattingTest(unittest.TestCase):
