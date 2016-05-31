@@ -10,7 +10,7 @@ try:
 except ImportError:
     from distutils.core import setup
 
-__version_info__ = (4, 2, 0)
+__version_info__ = (5, 0, 0)
 __version__ = '.'.join([str(v) for v in __version_info__])
 
 setup(name="Unum",

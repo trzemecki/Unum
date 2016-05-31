@@ -1,5 +1,5 @@
-Unum 4.2 - Units in Python 
-=========================================
+Unum 5.0 - Units in Python 
+==========================
 &copy; 2000-2003 Pierre Denis<br/>
 &copy; 2009-2010 Chris MacLeod<br/>
 &copy; 2016      Leszek Trzemecki<br/>
