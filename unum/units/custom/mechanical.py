@@ -18,6 +18,7 @@ tf = unit('tf', kg * 10e3 * gravity, 'tone force')
 
 kPa = unit('kPa', Pa * 1e3, 'kilopascal')
 MPa = unit('MPa', Pa * 1e6, 'megapascal')
+GPa = unit('GPa', Pa * 1e9, 'gigapascal')
 
 kNm = unit('kNm', kN * m, 'kilonewton meter')
 MNm = unit('MNm', MN * m, 'meganewton meter')
