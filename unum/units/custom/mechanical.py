@@ -4,7 +4,7 @@ from unum import unit
 
 
 __all__ = [
-    'kN', 'MN', 'kNm', 'MNm', 'kNcm', 'kG', 'T'
+    'kN', 'MN', 'kNm', 'MNm', 'kNcm', 'kG', 'T', 'GPa'
 ]
 
 kN = unit('kN', N * 1e3, 'kilonewton')
