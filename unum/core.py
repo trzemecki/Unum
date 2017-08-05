@@ -8,14 +8,15 @@ from .exceptions import *
 
 BASIC_UNIT = 0
 
-UnitDefinition = collections.namedtuple('UnitDefinition', 'definition,level,name')
+UnitDefinition = collections.namedtuple('UnitDefinition', ['definition', 'level', 'name'])
 
 
 class UnitTable(dict):
-    def reset(self, unitTable=None):
+    def reset(self, table=None):
         self.clear()
-        if unitTable is not None:
-            self.update(unitTable)
+
+        if table is not None:
+            self.update(table)
 
     def get_definition(self, symbol):
         return self[symbol].definition
@@ -31,14 +32,14 @@ class UnitTable(dict):
             raise NameConflictError(symbol)
 
         if definition == BASIC_UNIT:
-            conv_unum = None
+            equivalent = None
             level = 0
         else:
-            conv_unum = Unum.uniform(definition)
-            conv_unum._normal = True
-            level = conv_unum.maxLevel() + 1
+            equivalent = Unum.uniform(definition)
+            equivalent._normal = True
+            level = equivalent.max_level() + 1
 
-        self[symbol] = UnitDefinition(conv_unum, level, name)
+        self[symbol] = UnitDefinition(equivalent, level, name)
 
         return Unum(1, {symbol: 1}, normal=True)
 
@@ -50,9 +51,15 @@ new_unit = UNIT_TABLE.new_unit
 
 class Formatter(object):
     def __init__(
-            self, mul_separator='.', div_separator='/',
-            unit_format='[%s]', value_format='%s', indent=' ',
-            hide_empty=False, auto_norm=True
+            self,
+            mul_separator='.',
+            div_separator='/',
+            unit_format='[%s]',
+            value_format='%s',
+            indent=' ',
+            hide_empty=False,
+            auto_norm=True,
+            unit=None,
     ):
 
         self._mul = mul_separator
@@ -62,6 +69,7 @@ class Formatter(object):
         self._indent = indent
         self._auto_norm = auto_norm
         self._hide_empty = hide_empty
+        self._unit = unit
 
     def format_unit(self, unit):
         """
@@ -103,6 +111,8 @@ class Formatter(object):
             unum._normal = True
 
         return self._indent.join([self.format_value(unum._value), self.format_unit(unum._unit)]).strip()
+
+    __call__ = format
 
 
 def uniform_unum(func):
@@ -184,7 +194,7 @@ class Unum(object):
         if not other.is_basic():
             raise NonBasicUnitError(other)
 
-        s, o = self.matchUnits(other)
+        s, o = self.match_units(other)
         res = Unum(s._value / o._value, other._unit)
         res._normal = True
 
@@ -250,14 +260,14 @@ class Unum(object):
         if self._unit:
             raise ShouldBeUnitlessError(self)  # TODO consider other way to signalize it
 
-    def maxLevel(self):
+    def max_level(self):
         """
         :return: the maximum level of self's units
         """
         
         return max([0] + [UNIT_TABLE[symbol].level for symbol in self._unit])
 
-    def asNumber(self, other=None):
+    def as_number(self, other=None):
         """
         Return the (normalized) raw value of self.
 
@@ -265,7 +275,7 @@ class Unum(object):
         the raw value.
 
         Raises NonBasicUnitError if other is supplied, but has a value other
-        than 1. (e.g., kg.asNumber(2*g) is an error, but kg.asNumber(g) is ok.)
+        than 1. (e.g., kg.as_number(2*g) is an error, but kg.as_number(g) is ok.)
         """
 
         if other is None:
@@ -275,14 +285,14 @@ class Unum(object):
             if (other._value == 0) or (other != Unum(1, other._unit)):
                 raise NonBasicUnitError(other)
             else:
-                s, o = self.matchUnits(other)
+                s, o = self.match_units(other)
                 return s._value / o._value
         else:
             s = self.copy(True)
             s.assert_no_unit()
             return s._value / other
 
-    def matchUnits(self, other):
+    def match_units(self, other):
         """
         Return (self, other) where both Unums have the same units.
 
@@ -307,7 +317,7 @@ class Unum(object):
         s_length, o_length = len(s._unit), len(o._unit)
 
         revert = (s_length > o_length or
-                  (s_length == o_length and s.maxLevel() < o.maxLevel()))
+                  (s_length == o_length and s.max_level() < o.max_level()))
 
         if revert:
             s, o = o, s
@@ -328,12 +338,12 @@ class Unum(object):
 
     @uniform_unum
     def __add__(self, other):
-        s, o = self.matchUnits(other)
+        s, o = self.match_units(other)
         return Unum(s._value + o._value, s._unit)
 
     @uniform_unum
     def __sub__(self, other):
-        s, o = self.matchUnits(other)
+        s, o = self.match_units(other)
         return Unum(s._value - o._value, s._unit)
 
     def __pos__(self):
@@ -402,48 +412,48 @@ class Unum(object):
 
     @uniform_unum
     def __lt__(self, other):
-        s, o = self.matchUnits(other)
+        s, o = self.match_units(other)
         return s._value < o._value
 
     @uniform_unum
     def __le__(self, other):
-        s, o = self.matchUnits(other)
+        s, o = self.match_units(other)
         return s._value <= o._value
 
     @uniform_unum
     def __gt__(self, other):
-        s, o = self.matchUnits(other)
+        s, o = self.match_units(other)
         return s._value > o._value
 
     @uniform_unum
     def __ge__(self, other):
-        s, o = self.matchUnits(other)
+        s, o = self.match_units(other)
         return s._value >= o._value
 
     @uniform_unum
     def __eq__(self, other):
-        s, o = self.matchUnits(other)
+        s, o = self.match_units(other)
         return s._value == o._value
 
     @uniform_unum
     def __ne__(self, other):
-        s, o = self.matchUnits(other)
+        s, o = self.match_units(other)
         return s._value != o._value
 
     def __abs__(self):
         return Unum(abs(self._value), self._unit)
 
     def __complex__(self):
-        return complex(self.asNumber(1))
+        return complex(self.as_number(1))
 
     def __int__(self):
-        return int(self.asNumber(1))
+        return int(self.as_number(1))
 
     def __long__(self):
-        return int(self.asNumber(1))
+        return int(self.as_number(1))
 
     def __float__(self):
-        return float(self.asNumber(1))
+        return float(self.as_number(1))
 
     @uniform_unum
     def __radd__(self, other):
@@ -475,7 +485,7 @@ class Unum(object):
         return Unum(self._value[index], self._unit)
 
     def __setitem__(self, index, value):
-        self._value[index] = Unum.uniform(value).asNumber(Unum(1, self._unit))
+        self._value[index] = Unum.uniform(value).as_number(Unum(1, self._unit))
 
     def __len__(self):
         return len(self._value)

@@ -15,7 +15,7 @@ class UnumTest(unittest.TestCase):
 
     def test_Addition_UnitsNotMath_Throws(self):
         with self.assertRaises(unum.IncompatibleUnitsError):
-            result = mg + ms
+            _ = mg + ms
 
     def test_MathFunction_UnitlessArgument_ReturnUnitlessNumber(self):
         self.assertAlmostEqual(math.log10(1000 * m / m), 3.0, places=3)
@@ -31,12 +31,12 @@ class UnumTest(unittest.TestCase):
             unum.new_unit("myunit", 0, "my_new_unit")
 
     def test_AsNumber_Kg_to_g_Return1000(self):
-        result = kg.asNumber(g)
+        result = kg.as_number(g)
         self.assertEqual(1000, result)
 
     def test_AsNumber_ToNotBasicUnit_Throws(self):
         with self.assertRaises(unum.NonBasicUnitError):
-            kg.asNumber(2 * g)
+            kg.as_number(2 * g)
 
     def test_Equals_SI_J_and_J_ReturnTrue(self):
         self.assertTrue(N * m == J)
@@ -88,13 +88,13 @@ class UnumTest(unittest.TestCase):
         result = ns * numpy.array([2, 3, 4])
 
         self.assertIsInstance(result, unum.Unum)
-        self.assertIsInstance(result.asNumber(), numpy.ndarray)
+        self.assertIsInstance(result.as_number(), numpy.ndarray)
 
     def test_Uarray_Always_ReturnUnumWithNumpyArrayValue(self):
         result = unum.uarray([2, 3, 4])
 
         self.assertIsInstance(result, unum.Unum)
-        self.assertIsInstance(result.asNumber(), numpy.ndarray)
+        self.assertIsInstance(result.as_number(), numpy.ndarray)
 
     def test_Init_GivenUnitsIsDefined_ReturnNewUnumNumberWithGivenUnits(self):
         value = unum.Unum(2, {'m': 1, 's': -2})
@@ -121,7 +121,7 @@ class UnumTest(unittest.TestCase):
         with self.assertRaises(unum.NonBasicUnitError):
             value.cast_unit(2 * cm)
 
-    def test_Normalize_J_over_m_ReturnValueInN(self):
+    def test_SimplifyUnit_J_over_m_ReturnValueInN(self):
         value = 10 * J / m
 
         unum.Unum.set_format(auto_norm=False)
@@ -130,7 +130,7 @@ class UnumTest(unittest.TestCase):
 
         self.assertEqual("[N]", value.unit)
 
-    def test_Normalize_J_over_m2kg_Return_1_over_s2(self):
+    def test_SimplifyUnit_J_over_m2kg_Return_1_over_s2(self):
         value = 10 * J / kg / m ** 2
 
         unum.Unum.set_format(auto_norm=False)
@@ -139,7 +139,7 @@ class UnumTest(unittest.TestCase):
 
         self.assertEqual("[1/s2]", value.unit)
 
-    def test_Normalize_SameUnitWithDifferentPrefix_ReturnUnitless(self):
+    def test_SimplifyUnit_SameUnitWithDifferentPrefix_ReturnUnitless(self):
         value = 10 * kg / g
 
         unum.Unum.set_format(auto_norm=False)
@@ -148,7 +148,7 @@ class UnumTest(unittest.TestCase):
 
         self.assertEqual("[]", value.unit)
         
-    def test_Normalize_NamedDimensionlessUnitForDisplay_ReturnWithUnit(self):
+    def test_SimplifyUnit_NamedDimensionlessUnitForDisplay_ReturnWithUnit(self):
         value = 10 * rad
 
         unum.Unum.set_format(auto_norm=False)
@@ -174,7 +174,6 @@ class UnumTest(unittest.TestCase):
         value.simplify_unit()
 
         self.assertEqual("[]", value.unit)
-
 
     def tearDown(self):
         unum.Unum.reset_format()
@@ -275,7 +274,7 @@ class FormattingTest(unittest.TestCase):
 
         self.assertEqual("4.54", result)
 
-    def test_HideEmpty_NoUnitAndNoDivSeparator_FromatOnlyValue(self):
+    def test_HideEmpty_NoUnitAndNoDivSeparator_FormatOnlyValue(self):
         value = 4.54 * m / m
 
         unum.Unum.set_format(hide_empty=True, div_separator='')
@@ -283,18 +282,6 @@ class FormattingTest(unittest.TestCase):
         result = str(value)
 
         self.assertEqual("4.54", result)
-
-
-    # def test_Str_NotNormalize_(self):
-    #     value = 4.545682 * m / m
-    #
-    #     unum.Unum.AUTO_NORM = False
-    #
-    #     result = str(value)
-    #
-    #     self.assertEqual("4.55 [m3]", result)
-
-
 
     def tearDown(self):
         unum.Unum.reset_format()
