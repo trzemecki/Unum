@@ -32,3 +32,10 @@ def unitless(*values):
 
     return (value.asNumber(unit) for value in values)
 
+
+def as_unum(value):
+    if isinstance(value, Unum):
+        return value
+    else:
+        return Unum(value)
+

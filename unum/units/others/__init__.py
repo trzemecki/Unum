@@ -8,7 +8,7 @@ from unum.core import new_unit
 from ..si import *
 
 __all = [
-    'min', 'MIN',
+    'minutes', 'MIN',
     'h', 'H',
     'd', 'D',
     'deg', 'ARCDEG',
@@ -34,7 +34,7 @@ __all = [
     'rem', 'REM',
 ]
 
-min = MIN = new_unit('min', 60 * s, 'minute')
+minutes = MIN = new_unit('min', 60 * s, 'minute')
 h = H = new_unit('h', 60 * MIN, 'hour')
 d = D = new_unit('d', 24 * H, 'day')
 deg = ARCDEG = new_unit('deg', pi / 180 * RAD, 'degree (angle)')
@@ -56,7 +56,7 @@ bar = BAR = new_unit('bar', 1E5 * PA, 'bar')
 angstrom = ANGSTROM = new_unit('angstrom', 1E-10 * M, 'angstrom')
 b = B = new_unit('b', 1E-28 * M ** 2, 'barn')
 Ci = CI = new_unit('Ci', 3.7E10 * BQ, 'curie')
-R = R = new_unit('R', 2.58E-4 * C / KG, 'roentgen')
+R = new_unit('R', 2.58E-4 * C / KG, 'roentgen')
 rem = REM = new_unit('rem', 1E-2 * SV, 'rem')
 
 # Note : 'rad' defined as 1E-2 Gy as been left out because it conflits with

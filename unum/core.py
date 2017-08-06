@@ -1,10 +1,10 @@
-"""
-Main Unum module.
-"""
+from __future__ import division, unicode_literals
 
 import collections
-from .exceptions import *
 
+import six
+
+from .exceptions import *
 
 BASIC_UNIT = 0
 
@@ -49,27 +49,50 @@ UNIT_TABLE = UnitTable()
 new_unit = UNIT_TABLE.new_unit
 
 
-class Formatter(object):
-    def __init__(
-            self,
-            mul_separator='.',
-            div_separator='/',
-            unit_format='[%s]',
-            value_format='%s',
-            indent=' ',
-            hide_empty=False,
-            auto_norm=True,
-            unit=None,
-    ):
+_SUPERSCRIPT_NUMBERS = {
+    '0': '\u2070',
+    '1': '\u00B9',
+    '2': '\u00B2',
+    '3': '\u00B3',
+    '4': '\u2074',
+    '5': '\u2075',
+    '6': '\u2076',
+    '7': '\u2077',
+    '8': '\u2078',
+    '9': '\u2079',
+    '-': '\u207B',
+}
 
-        self._mul = mul_separator
-        self._div = div_separator
-        self._unit_format = unit_format
-        self._value_format = value_format
-        self._indent = indent
-        self._auto_norm = auto_norm
-        self._hide_empty = hide_empty
-        self._unit = unit
+_DOT = '\u00B7'
+
+
+class Formatter(object):
+    DEFAULT_CONFIG = dict(
+        mul_separator=_DOT,
+        div_separator='/',
+        unit_format='[%s]',
+        value_format='%s',
+        indent=' ',
+        hide_empty=False,
+        auto_norm=False,
+        unit=None,
+        superscript=True,
+    )
+
+    def __init__(self, **kwargs):
+        self._config = self.DEFAULT_CONFIG.copy()
+        self.configure(**kwargs)
+
+    def configure(self, **kwargs):
+        not_allowed_keywords = set(kwargs) - set(self._config)
+
+        if not_allowed_keywords:
+            raise TypeError("Not allowed keywords: %s" % ', '.join(not_allowed_keywords))
+
+        self._config.update(kwargs)
+
+    def __getitem__(self, item):
+        return self._config[item]
 
     def format_unit(self, unit):
         """
@@ -79,38 +102,52 @@ class Formatter(object):
         units = sorted(unit.items())
 
         formatted = (
-            self._format_only_mul_separator(units) if not self._div else
+            self._format_only_mul_separator(units) if not self['div_separator'] else
             self._format_with_div_separator(units)
         )
 
-        return '' if not formatted and self._hide_empty else self._unit_format % formatted
+        return '' if not formatted and self['hide_empty'] else self['unit_format'] % formatted
 
     def _format_only_mul_separator(self, units):
-        return self._mul.join(self._format_exponent(u, exp) for u, exp in units)
+        return self['mul_separator'].join(self._format_exponent(u, exp) for u, exp in units)
 
     def _format_with_div_separator(self, units):
-        return self._div.join([
-            self._mul.join(self._format_exponent(u, exp) for u, exp in units if exp > 0) or '1',
-            self._mul.join(self._format_exponent(u, -exp) for u, exp in units if exp < 0)
-        ]).rstrip(self._div + '1')
+        return self['div_separator'].join([
+            self['mul_separator'].join(self._format_exponent(u, exp) for u, exp in units if exp > 0) or '1',
+            self['mul_separator'].join(self._format_exponent(u, -exp) for u, exp in units if exp < 0)
+        ]).rstrip(self['div_separator'] + '1')
 
     def _format_exponent(self, symbol, exp):
-        return symbol + (str(exp) if exp != 1 else '')
+        def format_number(number):
+            text = six.text_type(exp)
+
+            if self['superscript']:
+                text = ''.join([_SUPERSCRIPT_NUMBERS.get(c, c) for c in text])
+                print('text', text)
+
+            return text
+
+        return symbol + (format_number(exp) if exp != 1 else '')
 
     def format_value(self, value):
-        return self._value_format % value
+        return self['value_format'] % value
 
-    def format(self, unum):
+    def format(self, value):
         """
         Return our string representation, normalized if applicable.
 
         Normalization occurs if Unum.AUTO_NORM is set.
         """
-        if self._auto_norm and not unum._normal:
-            unum.simplify_unit(True)
-            unum._normal = True
+        value = Unum.uniform(value)
 
-        return self._indent.join([self.format_value(unum._value), self.format_unit(unum._unit)]).strip()
+        if self['auto_norm'] and not value._normal:
+            value.simplify_unit(True)
+            value._normal = True
+
+        if self['unit'] is not None:
+            value = value.cast_unit(self['unit'])
+
+        return self['indent'].join([self.format_value(value._value), self.format_unit(value._unit)]).strip()
 
     __call__ = format
 
@@ -130,6 +167,8 @@ class Unum(object):
     string representation.
     """
 
+    __slots__ = ('_value', '_unit', '_normal')
+
     @staticmethod
     def uniform(value):
         """
@@ -140,13 +179,9 @@ class Unum(object):
         if isinstance(value, Unum):
             return value
         else:
-            return Unum(value, Unum._NO_UNIT)
+            return Unum(value)
 
     formatter = Formatter()
-
-    _NO_UNIT = {}
-
-    __slots__ = ('_value', '_unit', '_normal')
 
     @classmethod
     def set_format(cls, **kwargs):
@@ -156,14 +191,14 @@ class Unum(object):
     def reset_format(cls):
         cls.formatter = Formatter()
 
-    def __init__(self, value, unit, normal=False):
+    def __init__(self, value, unit=None, normal=False):
         """
         :param value: number or other object represents the mathematical value (e.g. numpy array)
         :param dict unit: {unit symbol : exponent} for example for 1 m/s2 should give {'m': 1, 's': -2}
         """
 
         self._value = value
-        self._unit = dict(unit)
+        self._unit = {} if unit is None else dict(unit)
         self._normal = normal
 
     @property
@@ -366,6 +401,7 @@ class Unum(object):
                     unit[u] = exp
                 else:
                     del unit[u]
+
         return Unum(self._value * other._value, unit)
 
     @uniform_unum
@@ -407,7 +443,7 @@ class Unum(object):
             for u in list(self._unit.keys()):
                 unit[u] *= other._value
         else:
-            unit = Unum._NO_UNIT
+            unit = None
         return Unum(self._value ** other._value, unit)
 
     @uniform_unum
