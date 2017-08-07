@@ -73,7 +73,7 @@ class Formatter(object):
         unit_format='[%s]',
         value_format='%s',
         indent=' ',
-        hide_empty=False,
+        unitless='[-]',
         auto_norm=False,
         unit=None,
         superscript=True,
@@ -94,7 +94,10 @@ class Formatter(object):
     def __getitem__(self, item):
         return self._config[item]
 
-    def format_unit(self, unit):
+    def format_unit(self, value):
+        return self._format_unit(value._unit)
+
+    def _format_unit(self, unit):
         """
         Return a string representation of our unit.
         """
@@ -106,7 +109,7 @@ class Formatter(object):
             self._format_with_div_separator(units)
         )
 
-        return '' if not formatted and self['hide_empty'] else self['unit_format'] % formatted
+        return self['unitless'] if not formatted else self['unit_format'] % formatted
 
     def _format_only_mul_separator(self, units):
         return self['mul_separator'].join(self._format_exponent(u, exp) for u, exp in units)
@@ -118,18 +121,20 @@ class Formatter(object):
         ]).rstrip(self['div_separator'] + '1')
 
     def _format_exponent(self, symbol, exp):
-        def format_number(number):
-            text = six.text_type(exp)
+        if exp != 1:
+            exp_text = six.text_type(exp)
 
             if self['superscript']:
-                text = ''.join([_SUPERSCRIPT_NUMBERS.get(c, c) for c in text])
-                print('text', text)
+                exp_text = ''.join([_SUPERSCRIPT_NUMBERS.get(c, c) for c in exp_text])
+        else:
+            exp_text = ''
 
-            return text
-
-        return symbol + (format_number(exp) if exp != 1 else '')
+        return symbol + exp_text
 
     def format_value(self, value):
+        return self._format_value(value._value)
+
+    def _format_value(self, value):
         return self['value_format'] % value
 
     def format(self, value):
@@ -147,7 +152,7 @@ class Formatter(object):
         if self['unit'] is not None:
             value = value.cast_unit(self['unit'])
 
-        return self['indent'].join([self.format_value(value._value), self.format_unit(value._unit)]).strip()
+        return self['indent'].join([self._format_value(value._value), self._format_unit(value._unit)]).strip()
 
     __call__ = format
 
@@ -203,7 +208,7 @@ class Unum(object):
 
     @property
     def unit(self):
-        return self.formatter.format_unit(self._unit)
+        return self.formatter.format_unit(self)
 
     def copy(self, normalized=False):
         """
@@ -532,7 +537,7 @@ class Unum(object):
     __repr__ = __str__
 
     def __getstate__(self):
-        return self._value, self._unit, self._normal
+        return self._value, dict(self._unit)
 
     def __setstate__(self, state):
-        self._value, self._unit, self._normal = state
+        self._value, self._unit = state

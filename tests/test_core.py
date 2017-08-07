@@ -1,4 +1,4 @@
-from __future__ import unicode_literals
+from __future__ import unicode_literals, absolute_import
 
 import math
 import unittest
@@ -143,7 +143,7 @@ class UnumTest(unittest.TestCase):
 
         value.simplify_unit()
 
-        self.assertEqual("[]", value.unit)
+        self.assertEqual("[-]", value.unit)
 
     def test_SimplifyUnit_NamedDimensionlessUnitForDisplay_ReturnWithUnit(self):
         value = as_unum(10 * rad)
@@ -164,7 +164,7 @@ class UnumTest(unittest.TestCase):
 
         value.simplify_unit()
 
-        self.assertEqual("[]", value.unit)
+        self.assertEqual("[-]", value.unit)
 
     @classmethod
     def setUpClass(cls):
@@ -185,7 +185,7 @@ class FormatterTest(unittest.TestCase):
         self.assertEqual("5.4 [m]", result)
 
     def test_Format_NoUnit_DisplayEmptyBrackets(self):
-        formatter = self.create()
+        formatter = self.create(unitless='[]')
         value = 5.4 * m / m
 
         result = formatter.format(value)
@@ -265,7 +265,7 @@ class FormatterTest(unittest.TestCase):
         self.assertEqual("4.54 [1/s2]", result)
 
     def test_Format_HideEmptyNoUnit_FormatOnlyValue(self):
-        formatter = self.create(hide_empty=True)
+        formatter = self.create(unitless='')
         value = 4.54 * m / m
 
         result = formatter.format(value)
@@ -273,7 +273,7 @@ class FormatterTest(unittest.TestCase):
         self.assertEqual("4.54", result)
 
     def test_Format_NoUnitAndNoDivSeparator_FormatOnlyValue(self):
-        formatter = self.create(hide_empty=True, div_separator='')
+        formatter = self.create(unitless='', div_separator='')
         value = 4.54 * m / m
 
         result = formatter.format(value)

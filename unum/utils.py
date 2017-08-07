@@ -5,6 +5,7 @@ def uarray(array_like, *args, **kwargs):
     """
     Convenience function to return a Unum containing a numpy array.
     With current versions of numpy, we have the following undesirable behavior:
+    >>> from unum.units import M
     >>> array([5,6,7,8]) * M
     array([5 [m], 6 [m], 7 [m], 8 [m]], dtype=object)
 
@@ -69,3 +70,16 @@ def as_number(value, *args, **kwargs):
         pass
 
     return number
+
+
+def encode(number):
+    return number.__getstate__() if isinstance(number, Unum) else number
+
+
+def decode(number):
+    if isinstance(number, (list, tuple)):
+        result = Unum(0)
+        result.__setstate__(number)
+        return result
+    else:
+        return number

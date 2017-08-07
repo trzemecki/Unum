@@ -94,4 +94,36 @@ class ModuleTest(unittest.TestCase):
 
         self.assertEqual('0.13', actual)
 
+    def test_Encode_FloatGiven_ReturnGivenValue(self):
+        value = 12.3
+
+        actual = self.encode(value)
+
+        self.assertAlmostEqual(12.3, actual)
+
+    def test_Decode_FloatGiven_ReturnGivenValue(self):
+        value = 12.3
+
+        actual = self.decode(value)
+
+        self.assertAlmostEqual(12.3, actual)
+
+    def test_Encode_UnumGiven_ReturnEncodedUnum(self):
+        value = 12.3 * m
+
+        actual = self.encode(value)
+
+        self.assertIsNotNone(actual)
+
+    def test_Decode_EncodedUnumGiven_ReturnUnumEqualToValueBeforeEncoding(self):
+        value = 123.3 * m
+        encoded = self.encode(value)
+        value *= 3 * s  # prevent to storing any encoded value info
+
+        actual = self.decode(encoded)
+
+        self.assertAlmostEqual(123.3, actual.as_number(m))
+
     as_number = staticmethod(unum.utils.as_number)
+    decode = staticmethod(unum.utils.decode)
+    encode = staticmethod(unum.utils.encode)
