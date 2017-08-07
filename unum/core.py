@@ -95,7 +95,7 @@ class Formatter(object):
         return self._config[item]
 
     def format_unit(self, value):
-        return self._format_unit(value._unit)
+        return value.format_unit(self._format_unit)
 
     def _format_unit(self, unit):
         """
@@ -131,10 +131,10 @@ class Formatter(object):
 
         return symbol + exp_text
 
-    def format_value(self, value):
-        return self._format_value(value._value)
+    def format_number(self, value):
+        return value.format_number(self._format_number)
 
-    def _format_value(self, value):
+    def _format_number(self, value):
         return self['value_format'] % value
 
     def format(self, value):
@@ -152,7 +152,10 @@ class Formatter(object):
         if self['unit'] is not None:
             value = value.cast_unit(self['unit'])
 
-        return self['indent'].join([self._format_value(value._value), self._format_unit(value._unit)]).strip()
+        if value.is_unit():
+            return self.format_unit(value)
+
+        return self['indent'].join([self.format_number(value), self.format_unit(value)]).strip()
 
     __call__ = format
 
@@ -206,9 +209,8 @@ class Unum(object):
         self._unit = {} if unit is None else dict(unit)
         self._normal = normal
 
-    @property
     def unit(self):
-        return self.formatter.format_unit(self)
+        return Unum(1, self._unit.copy())
 
     def copy(self, normalized=False):
         """
@@ -243,6 +245,8 @@ class Unum(object):
     def is_basic(self):
         return self._value == 1
 
+    is_unit = is_basic
+
     def replaced(self, symbol, definition):
         """
         Return a Unum with the string u replaced by the Unum conv_unum.
@@ -265,7 +269,7 @@ class Unum(object):
 
         If forDisplay is True, then prefer a single unit to no unit.
         """
-        
+
         # TODO: example of forDisplay.
         # TODO: simplify normalize so it fits in 80 columns...
 
@@ -304,10 +308,10 @@ class Unum(object):
         """
         :return: the maximum level of self's units
         """
-        
+
         return max([0] + [UNIT_TABLE[symbol].level for symbol in self._unit])
 
-    def as_number(self, other=None):
+    def number(self, unit=None):
         """
         Return the (normalized) raw value of self.
 
@@ -315,22 +319,22 @@ class Unum(object):
         the raw value.
 
         Raises NonBasicUnitError if other is supplied, but has a value other
-        than 1. (e.g., kg.as_number(2*g) is an error, but kg.as_number(g) is ok.)
+        than 1. (e.g., kg.number(2*g) is an error, but kg.number(g) is ok.)
         """
 
-        if other is None:
+        if unit is None:
             return self.copy(True)._value
 
-        if isinstance(other, Unum):
-            if (other._value == 0) or (other != Unum(1, other._unit)):
-                raise NonBasicUnitError(other)
-            else:
-                s, o = self.match_units(other)
-                return s._value / o._value
+        if isinstance(unit, Unum):
+            if not unit.is_unit():
+                raise NonBasicUnitError(unit)
+
+            s, o = self.match_units(unit)
+            return s._value / o._value
         else:
             s = self.copy(True)
             s.assert_no_unit()
-            return s._value / other
+            return s._value / unit
 
     def match_units(self, other):
         """
@@ -375,6 +379,12 @@ class Unum(object):
             s, o = o, s
 
         return s, o
+
+    def format_number(self, func):
+        return func(self._value)
+
+    def format_unit(self, func):
+        return func(self._unit)
 
     @uniform_unum
     def __add__(self, other):
@@ -485,16 +495,16 @@ class Unum(object):
         return Unum(abs(self._value), self._unit)
 
     def __complex__(self):
-        return complex(self.as_number(1))
+        return complex(self.number(1))
 
     def __int__(self):
-        return int(self.as_number(1))
+        return int(self.number(1))
 
     def __long__(self):
-        return int(self.as_number(1))
+        return int(self.number(1))
 
     def __float__(self):
-        return float(self.as_number(1))
+        return float(self.number(1))
 
     @uniform_unum
     def __radd__(self, other):
@@ -526,7 +536,7 @@ class Unum(object):
         return Unum(self._value[index], self._unit)
 
     def __setitem__(self, index, value):
-        self._value[index] = Unum.uniform(value).as_number(Unum(1, self._unit))
+        self._value[index] = Unum.uniform(value).number(self.unit())
 
     def __len__(self):
         return len(self._value)
@@ -537,7 +547,7 @@ class Unum(object):
     __repr__ = __str__
 
     def __getstate__(self):
-        return self._value, dict(self._unit)
+        return self._value, self._unit.copy()
 
     def __setstate__(self, state):
         self._value, self._unit = state

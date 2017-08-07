@@ -34,14 +34,14 @@ class UnumTest(unittest.TestCase):
         with self.assertRaises(unum.NameConflictError):
             unum.new_unit("a_unit", 0, "my_new_unit")
 
-    def test_AsNumber_Kg_to_g_Return1000(self):
-        result = kg.as_number(g)
+    def test_Number_Kg_to_g_Return1000(self):
+        result = kg.number(g)
 
         self.assertEqual(1000, result)
 
-    def test_AsNumber_ToNotBasicUnit_Throws(self):
+    def test_Number_ToNotBasicUnit_Throws(self):
         with self.assertRaises(unum.NonBasicUnitError):
-            kg.as_number(2 * g)
+            kg.number(2 * g)
 
     def test_Equals_SI_J_and_J_ReturnTrue(self):
         self.assertEqual(J, N * m)
@@ -54,11 +54,11 @@ class UnumTest(unittest.TestCase):
 
         self.assertEqual(1000 * W, result)
 
-    def test_AsUnit_UnitNotMatch_Throws(self):
+    def test_CastUnit_UnitNotMatch_Throws(self):
         with self.assertRaises(unum.IncompatibleUnitsError):
             S.cast_unit(h)
 
-    def test_AsUnit_HoursToSeconds_Return3600s(self):
+    def test_CastUnit_HoursToSeconds_Return3600s(self):
         result = h.cast_unit(s)
 
         self.assertEqual(3600 * s, result)
@@ -93,13 +93,7 @@ class UnumTest(unittest.TestCase):
         result = as_unum(ns * numpy.array([2, 3, 4]))
 
         self.assertIsInstance(result, unum.Unum)
-        self.assertIsInstance(result.as_number(), numpy.ndarray)
-
-    def test_Uarray_Always_ReturnUnumWithNumpyArrayValue(self):
-        result = unum.uarray([2, 3, 4])
-
-        self.assertIsInstance(result, unum.Unum)
-        self.assertIsInstance(result.as_number(), numpy.ndarray)
+        self.assertIsInstance(result.number(), numpy.ndarray)
 
     def test_Init_GivenUnitsIsDefined_ReturnNewUnumNumberWithGivenUnits(self):
         value = unum.Unum(2, {'m': 1, 's': -2})
@@ -129,42 +123,42 @@ class UnumTest(unittest.TestCase):
 
         value.simplify_unit()
 
-        self.assertEqual("[N]", value.unit)
+        self.assertEqual(N, value.unit())
 
     def test_SimplifyUnit_J_over_m2kg_Return_1_over_s2(self):
         value = as_unum(10 * J / kg / m ** 2)
 
         value.simplify_unit()
 
-        self.assertEqual("[1/s2]", value.unit)
+        self.assertEqual(1 / (s ** 2), value.unit())
 
     def test_SimplifyUnit_SameUnitWithDifferentPrefix_ReturnUnitless(self):
         value = as_unum(10 * kg / g)
 
         value.simplify_unit()
 
-        self.assertEqual("[-]", value.unit)
+        self.assertEqual(unitless, value.unit())
 
     def test_SimplifyUnit_NamedDimensionlessUnitForDisplay_ReturnWithUnit(self):
         value = as_unum(10 * rad)
 
         value.simplify_unit(forDisplay=True)
 
-        self.assertEqual("[rad]", value.unit)
+        self.assertEqual(rad, value.unit())
 
     def test_SimplifyUnit_J_over_cm_ReturnN(self):
         value = as_unum(14 * J / cm)
 
         value.simplify_unit()
 
-        self.assertEqual("[N]", value.unit)
+        self.assertEqual(N, value.unit())
 
     def test_SimplifyUnit_SamePrimaryUnit_ReturnUnitless(self):
         value = as_unum(5 * Hz * s)
 
         value.simplify_unit()
 
-        self.assertEqual("[-]", value.unit)
+        self.assertEqual(unitless, value.unit())
 
     @classmethod
     def setUpClass(cls):

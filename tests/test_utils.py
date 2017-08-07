@@ -2,12 +2,60 @@ from __future__ import print_function, absolute_import, division, unicode_litera
 
 import unittest
 
+import numpy
+
 import unum.exceptions
 import unum.utils
 from unum.units import *
 
 
 class ModuleTest(unittest.TestCase):
+    def test_Uarray_Always_ReturnUnumWithNumpyArrayValue(self):
+        result = self.uarray([2, 3, 4])
+
+        self.assertIsInstance(result, unum.Unum)
+        self.assertIsInstance(result.number(), numpy.ndarray)
+
+    def test_AsUnum_OnlyFloatValueGiven_ReturnUnumWithNoUnit(self):
+        value = 12.3
+
+        actual = self.as_unum(value)
+
+        actual.match_units(unum.Unum(1))
+
+    def test_AsUnum_OnlyUnumValueGiven_ReturnGivenUnum(self):
+        value = 12.3 * m
+
+        actual = self.as_unum(value)
+
+        self.assertIs(actual, value)
+
+    def test_AsUnum_FloatValueAndUnitGiven_ReturnUnumWithGivenNumberAndUnit(self):
+        value = 12.3
+
+        actual = self.as_unum(value, m)
+
+        self.assertEqual(m, actual.unit())
+
+    def test_AsUnum_FloatWithNotBasicUnitGiven_Throws(self):
+        value = 12.3
+
+        with self.assertRaises(unum.exceptions.NonBasicUnitError):
+            _ = self.as_unum(value, 2 * m)
+
+    def test_AsUnum_UnumWithCompatibleUnit_ReturnGivenUnum(self):
+        value = 12.3 * m
+
+        actual = self.as_unum(value, cm)
+
+        self.assertIs(actual, value)
+
+    def test_AsUnum_UnumWithNotCompatibleUnit_Throws(self):
+        value = 12.3 * m
+
+        with self.assertRaises(unum.exceptions.IncompatibleUnitsError):
+            _ = self.as_unum(value, Pa)
+
     def test_AsNumber_OnlyUnumGiven_ReturnValueForCurrentUnit(self):
         value = 2.3 * m
 
@@ -122,8 +170,10 @@ class ModuleTest(unittest.TestCase):
 
         actual = self.decode(encoded)
 
-        self.assertAlmostEqual(123.3, actual.as_number(m))
+        self.assertAlmostEqual(123.3, actual.number(m))
 
+    uarray = staticmethod(unum.utils.uarray)
+    as_unum = staticmethod(unum.utils.as_unum)
     as_number = staticmethod(unum.utils.as_number)
     decode = staticmethod(unum.utils.decode)
     encode = staticmethod(unum.utils.encode)

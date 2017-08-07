@@ -1,4 +1,5 @@
 from .core import Unum
+from .exceptions import NonBasicUnitError
 
 
 def uarray(array_like, *args, **kwargs):
@@ -19,26 +20,27 @@ def uarray(array_like, *args, **kwargs):
     return Unum.uniform(array(array_like, *args, **kwargs))
 
 
-def with_unit(value, unit):
-    if isinstance(value, Unum):
-        value.match_units(unit)
-    else:
-        value = value * unit
-
-    return value
-
-
 def unitless(*values):
     unit = Unum(1, values[0]._unit)
 
     return (value.asNumber(unit) for value in values)
 
 
-def as_unum(value):
+def is_unit(value):
+    return isinstance(value, Unum) and value.is_basic()
+
+
+def as_unum(value, unit=None):
+    if unit is not None and not is_unit(unit):
+        raise NonBasicUnitError(unit)
+
     if isinstance(value, Unum):
+        if unit is not None:
+            value.match_units(unit)
+
         return value
-    else:
-        return Unum(value)
+
+    return Unum(value) if unit is None else value * unit
 
 
 def as_number(value, *args, **kwargs):
@@ -57,10 +59,10 @@ def as_number(value, *args, **kwargs):
     assert len(args) <= 2
 
     if len(args) == 2:
-        value = with_unit(value, args[0])
+        value = as_unum(value, args[0])
 
     if isinstance(value, Unum):
-        number = value.as_number(args[-1]) if len(args) > 0 else value.as_number()
+        number = value.number(args[-1]) if len(args) > 0 else value.number()
     else:
         number = value
 
@@ -73,7 +75,7 @@ def as_number(value, *args, **kwargs):
 
 
 def encode(number):
-    return number.__getstate__() if isinstance(number, Unum) else number
+    return list(number.__getstate__()) if isinstance(number, Unum) else number
 
 
 def decode(number):
