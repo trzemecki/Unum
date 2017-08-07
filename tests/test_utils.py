@@ -56,6 +56,20 @@ class ModuleTest(unittest.TestCase):
         with self.assertRaises(unum.exceptions.IncompatibleUnitsError):
             _ = self.as_unum(value, Pa)
 
+    def test_AsUnit_FloatGiven_ReturnUnitlessUnum(self):
+        value = 12.3
+
+        actual = self.as_unit(value)
+
+        self.assertEqual(unitless, actual)
+
+    def test_AsUnit_UnumGiven_ReturnUnumUnit(self):
+        value = 12.3 * m
+
+        actual = self.as_unit(value)
+
+        self.assertEqual(m, actual)
+
     def test_AsNumber_OnlyUnumGiven_ReturnValueForCurrentUnit(self):
         value = 2.3 * m
 
@@ -174,6 +188,7 @@ class ModuleTest(unittest.TestCase):
 
     uarray = staticmethod(unum.utils.uarray)
     as_unum = staticmethod(unum.utils.as_unum)
+    as_unit = staticmethod(unum.utils.as_unit)
     as_number = staticmethod(unum.utils.as_number)
     decode = staticmethod(unum.utils.decode)
     encode = staticmethod(unum.utils.encode)

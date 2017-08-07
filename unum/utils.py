@@ -43,6 +43,10 @@ def as_unum(value, unit=None):
     return Unum(value) if unit is None else value * unit
 
 
+def as_unit(value):
+    return value.unit() if isinstance(value, Unum) else Unum(1)
+
+
 def as_number(value, *args, **kwargs):
     """
     Using:
