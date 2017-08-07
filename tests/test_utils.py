@@ -82,7 +82,7 @@ class ModuleTest(unittest.TestCase):
 
         actual = self.as_number(value)
 
-        self.assertAlmostEqual(2.3, value)
+        self.assertAlmostEqual(2.3, actual)
 
     def test_AsNumber_UnumWithCurrentUnit_ReturnUnumValue(self):
         value = 2.3 * m

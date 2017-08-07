@@ -1,8 +1,21 @@
-Unum 5.0 - Units in Python 
+Unum 5.0 (fork) - Units in Python 
 ==========================
 &copy; 2000-2003 Pierre Denis<br/>
 &copy; 2009-2010 Chris MacLeod<br/>
-&copy; 2016      Leszek Trzemecki<br/>
+&copy; 2016-2017      Leszek Trzemecki<br/>
+
+Version info
+-------------------------------------------------------------------------
+
+  - This repository is cloned from: http://bitbucket.org/kiv/unum/
+  - Version is not compatible with previous `unum` (**no backward compatibility**)
+  - Unicode using by default; units exponents are displaying using unicode superscript
+  - New module function allowing using alternatively `float`, `int` or `Unum`  
+
+License
+--------
+
+Library is distributed under **GNU LGPL** license (see `LICENSE.txt` file)
 
 Installation
 -------------------------------------------------------------------------
@@ -55,7 +68,7 @@ For a simple example, let's can calculate Usain Bolt's average speed during his 
 If we do something dimensionally incorrect, we get an exception rather than silently computing a correct result. Let's try calculating his kinetic energy using an erroneous formula
 
     >>> KE = 86*kg * speed / 2 # Should be speed squared!
-    >>> KE.asUnit(J)
+    >>> KE.cast_unit(J)
     Traceback (most recent call last):
       File "<stdin>", line 1, in <module>
       File "unum\__init__.py", line 171, in asUnit
@@ -67,7 +80,7 @@ If we do something dimensionally incorrect, we get an exception rather than sile
 The exception pinpoints the problem, allowing us to examine the units and fix the formula
 
     >>> KE = 86*kg * speed**2 / 2
-    >>> KE.asUnit(J)
+    >>> KE.cast_unit(J)
     4586.15355558 [J]
 
 Unum will also report errors in attempting to add incompatible units
@@ -219,8 +232,8 @@ Defining New Units
 
 Creating new units is done with a single function call. Imagine you want to define a new unit called 'spam', with derived units 'kilospam', 'millispam', and 'sps' (spam per second)
 
-    >>> from unum import Unum
-    >>> SPAM = Unum.unit('spam')
+    >>> from unum import new_unit
+    >>> SPAM = new_unit('spam')
 
 Now the variable SPAM refers to a Unum representing one 'spam'. The name of the variable is arbitrary, and the same Unum can have multiple names
 
@@ -231,17 +244,17 @@ Now the variable SPAM refers to a Unum representing one 'spam'. The name of the 
 Here both spam and SPAM can be used interchangeably to refer to the same thing.
 Derived units are defined in relation to this base unit
     
-    >>> KSPAM = Unum.unit('kilospam', 1000 * SPAM)
-    >>> MSPAM = Unum.unit('millispam', 0.001 * SPAM)
-    >>> SPS = Unum.unit('sps', SPAM / S)
+    >>> KSPAM = new_unit('kilospam', 1000 * SPAM)
+    >>> MSPAM = new_unit('millispam', 0.001 * SPAM)
+    >>> SPS = new_unit('sps', SPAM / S)
     
 The second argument provided is the definition of the derived unit in terms of previously defined units. Note that the variable name is arbitrary and independent of the longer symbol used. Now you can work with 'spammed' quantities.
 
-    >>> (500 * MSPAM).asUnit(SPAM)
+    >>> (500 * MSPAM).cast_unit(SPAM)
     0.5 [spam]
-    >>> (5000 * MSPAM).asUnit(SPAM)
+    >>> (5000 * MSPAM).cast_unit(SPAM)
     5.0 [spam]
-    >>> SPS.asUnit(MSPAM/S)
+    >>> SPS.cast_unit(MSPAM/S)
     1000.0 [millispam/s]
     >>> 5*SPS * 20*S
     100 [spam]
@@ -255,12 +268,12 @@ You can keep your favorite units in a normal Python module, and then import that
 
     # my_spam.py
     from unum.units import *
-    from unum import Unum
+    from unum import new_unit
 
-    SPAM = Unum.unit('spam')
-    KSPAM = Unum.unit('kilospam', 1000 * SPAM)
-    MSPAM = Unum.unit('millispam', 0.001 * SPAM)
-    SPS = Unum.unit('sps', SPAM / S)
+    SPAM = new_unit('spam')
+    KSPAM = new_unit('kilospam', 1000 * SPAM)
+    MSPAM = new_unit('millispam', 0.001 * SPAM)
+    SPS = new_unit('sps', SPAM / S)
 
 Placing this module anywhere on your Python path will allow you to do
 
@@ -280,15 +293,18 @@ Advanced usage
 
 The string representation of Unums can be configured by modifying the variables of the Unum class:
 
-    >>> Unum.UNIT_SEP = ' '
-    >>> Unum.UNIT_DIV_SEP = None
-    >>> Unum.UNIT_FORMAT = '%s'
-    >>> Unum.UNIT_HIDE_EMPTY = True
-    >>> Unum.VALUE_FORMAT = "%15.7f"
+    >>> Unum.set_format(
+    ...     mul_separator=' ',
+    ...     div_separator='',
+    ...     unit_format='%s',
+    ...     value_format='%15.7f',
+    ...     unitless='', # hide empty
+    ...     superscript=False)
+    
     >>> M
-    >>>      1.0000000 m
+    1.0000000 m
     >>> 25 * KG*M/S**2
-         25.0000000 kg m s-2
+    25.0000000 kg m s-2
     >>> M/ANGSTROM
     10000000000.0000000
     >>>
@@ -304,7 +320,7 @@ By default, Unum will find the shortest unit representation among equivalent exp
     
 This behavior can be controlled by a flag on the Unum class
 
-    >>> Unum.AUTO_NORM = False
+    >>> Unum.set_format(auto_norm=False)
     >>> Pa * m**2
     1 [Pa.m2]
     
@@ -313,23 +329,16 @@ Then you must manually normalize by calling the normalize method
     >>> x = Pa * m**2
     >>> x
     1 [Pa.m2]
-    >>> x.normalize()
+    >>> x.simplify_unit()
     1 [N]
     >>> x
     1 [N]
     
 Note that normalize permanently modifies the instance itself as a side-effect.
 
-To run the test cases
+Running tests
 -------------------------------------------------------------------------
 ```{r, engine='bash', count_lines}
   cd <install-directory>
   python setup.py test
 ```
-Other information
--------------------------------------------------------------------------
-
-  - This repository is cloned from: http://bitbucket.org/kiv/unum/
-  - New features in this version:
-    - now it is possible to using **sum** function with Unum
-    - append mechanical units like kN, kPa, kNm

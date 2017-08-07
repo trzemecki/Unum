@@ -27,7 +27,7 @@ class UnitTable(dict):
     def is_derived(self, symbol):
         return not self.is_basic(symbol)
 
-    def new_unit(self, symbol, definition, name):
+    def new_unit(self, symbol, definition=BASIC_UNIT, name=''):
         if symbol in self:
             raise NameConflictError(symbol)
 
