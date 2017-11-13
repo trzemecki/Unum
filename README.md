@@ -159,11 +159,11 @@ What's happening here is that when math.log wants a plain number, it coerces (co
     >>> float(two)
     2.0
        
-Another way to get at the value inside the Unum is with the asNumber method, which allows you to do a conversion at the same time
+Another way to get at the value inside the Unum is with the `number` method, which allows you to do a conversion at the same time
 
-    >>> speed.asNumber(mile/h) # Get the value in mile/h
+    >>> speed.number(mile/h) # Get the value in mile/h
     23.101743797879877
-    >>> speed.asNumber() # Get the value in the current units
+    >>> speed.number() # Get the value in the current units
     10.3273778788
 
 Standard library integration
@@ -220,9 +220,9 @@ The second caveat is most of NumPy's universal functions don't work on Unums, ev
       File "<stdin>", line 1, in <module>
     AttributeError: cos    
 
-Luckily, you can extract the value of any Unum using the asNumber method, allowing you to use the array inside
+Luckily, you can extract the value of any Unum using the `number` method, allowing you to use the array inside
 
-    >>> cos(lengths.asNumber())
+    >>> cos(lengths.number())
     array([-0.41614684, -0.9899925 , -0.65364362])  
 
 If anyone has ideas on improving integration with Unum, I'd love to hear from you.
