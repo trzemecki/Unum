@@ -77,6 +77,7 @@ class Formatter(object):
         auto_norm=False,
         unit=None,
         superscript=True,
+        always_display_number=False,
     )
 
     def __init__(self, **kwargs):
@@ -152,7 +153,7 @@ class Formatter(object):
         if self['unit'] is not None:
             value = value.cast_unit(self['unit'])
 
-        if value.is_unit():
+        if not self['always_display_number'] and value.is_unit():
             return self.format_unit(value)
 
         return self['indent'].join([self.format_number(value), self.format_unit(value)]).strip()
