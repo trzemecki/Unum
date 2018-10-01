@@ -43,12 +43,13 @@ class ModuleTest(unittest.TestCase):
         with self.assertRaises(unum.exceptions.NonBasicUnitError):
             _ = self.as_unum(value, 2 * m)
 
-    def test_AsUnum_UnumWithCompatibleUnit_ReturnGivenUnum(self):
+    def test_AsUnum_UnumWithCompatibleUnit_ReturnUnumWithCastedUnit(self):
         value = 12.3 * m
 
         actual = self.as_unum(value, cm)
 
-        self.assertIs(actual, value)
+        self.assertEqual(actual, value)
+        self.assertAlmostEqual(1230, actual.number(), delta=0.1)
 
     def test_AsUnum_UnumWithNotCompatibleUnit_Throws(self):
         value = 12.3 * m

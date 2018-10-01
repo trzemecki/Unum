@@ -36,7 +36,7 @@ def as_unum(value, unit=None):
 
     if isinstance(value, Unum):
         if unit is not None:
-            value.match_units(unit)
+            value = value.cast_unit(unit)
 
         return value
 

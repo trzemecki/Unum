@@ -484,12 +484,19 @@ class Unum(object):
 
     @uniform_unum
     def __eq__(self, other):
-        s, o = self.match_units(other)
+        try:
+            s, o = self.match_units(other)
+        except IncompatibleUnitsError:
+            return False
+
         return s._value == o._value
 
     @uniform_unum
     def __ne__(self, other):
-        s, o = self.match_units(other)
+        try:
+            s, o = self.match_units(other)
+        except IncompatibleUnitsError:
+            return True
         return s._value != o._value
 
     def __abs__(self):

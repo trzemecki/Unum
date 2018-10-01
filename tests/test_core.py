@@ -160,6 +160,29 @@ class UnumTest(unittest.TestCase):
 
         self.assertEqual(unitless, value.unit())
 
+    def test_Equal_DifferentUnits_ReturnFalse(self):
+        a = 5 * m
+        b = 4 * K
+
+        assert not a == b
+
+    def test_Equal_WithNone_ReturnFalse(self):
+        value = 5 * m
+
+        assert not value == None
+
+    def test_NotEqual_DifferentUnits_ReturnTrue(self):
+        a = 5 * K
+        b = 4 * m
+
+        assert a != b
+
+    def test_NotEqual_WithNone_ReturnTrue(self):
+        a = 5 * K
+        b = None
+
+        assert a != b
+
     @classmethod
     def setUpClass(cls):
         unum.Unum.set_format(superscript=False, mul_separator='.')
