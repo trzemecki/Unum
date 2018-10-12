@@ -555,7 +555,7 @@ class Unum(object):
     __repr__ = __str__
 
     def __getstate__(self):
-        return self._value, self._unit.copy()
+        return self._value, self._unit.copy(), self._normal
 
     def __setstate__(self, state):
-        self._value, self._unit = state
+        self._value, self._unit, self._normal = state
