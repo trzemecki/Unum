@@ -79,13 +79,17 @@ def as_number(value, *args, **kwargs):
 
 
 def encode(number):
-    return list(number.__getstate__()) if isinstance(number, Unum) else number
+    if isinstance(number, Unum):
+        value, unit, normal = number.__getstate__()
+        return [value, unit]
+    else:
+        return number
 
 
 def decode(number):
     if isinstance(number, (list, tuple)):
-        result = Unum(0)
-        result.__setstate__(number)
+        value, unit = number
+        result = Unum(value, unit)
         return result
     else:
         return number
