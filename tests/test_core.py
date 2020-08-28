@@ -183,6 +183,16 @@ class UnumTest(unittest.TestCase):
 
         assert a != b
 
+    def test_Bool_ZeroValue_ReturnFalse(self):
+        a = 0. * K
+
+        assert not a
+
+    def test_Bool_NonZeroValue_ReturnTrue(self):
+        a = 5 * K
+
+        assert a
+
     @classmethod
     def setUpClass(cls):
         unum.Unum.set_format(superscript=False, mul_separator='.')

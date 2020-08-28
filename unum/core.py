@@ -549,6 +549,11 @@ class Unum(object):
     def __len__(self):
         return len(self._value)
 
+    def __bool__(self):
+        return bool(self._value)
+
+    __nonzero__ = __bool__
+
     def __str__(self):
         return self.formatter.format(self)
 
