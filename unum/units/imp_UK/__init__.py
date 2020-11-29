@@ -1,7 +1,8 @@
 """
 UK Imperial units.
-Author: L Selter
-
+Author: L Selter, 2020
+Maintainer: L Selter
+https://github.com/Tirpitz93
 """
 
 from unum import Unum
