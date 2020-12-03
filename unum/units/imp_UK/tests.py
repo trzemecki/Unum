@@ -39,9 +39,9 @@ class ApothecaryTests(unittest.TestCase):
         self.assertAlmostEqual(1, lb_ap.cast_unit(lb_t).number(),5)
 
     def test_ap_minim(self):
-        from unum.units.others import l
+        from unum.units.others import L
         from unum.units.imp_UK.Apothecaries import min_ap
-        self.assertAlmostEqual(0.0000591938802083, min_ap.cast_unit(l).number(),5)
+        self.assertAlmostEqual(0.0000591938802083, min_ap.cast_unit(L).number(), 5)
 
     def test_ap_fl_dram(self):
         from unum.units.imp_UK.Apothecaries import fl_dr_ap
