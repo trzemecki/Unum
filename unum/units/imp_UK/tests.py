@@ -133,3 +133,7 @@ class MintTests(unittest.TestCase):
         warn(TestPrecisionWarning())
     def test_blank(self):
         warn(TestPrecisionWarning())
+    def test_droit(self):
+        warn(TestPrecisionWarning())
+    def test_perit(self):
+        warn(TestPrecisionWarning())
