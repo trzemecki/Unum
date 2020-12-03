@@ -40,7 +40,7 @@ d = D = new_unit('d', 24 * H, 'day')
 deg = ARCDEG = new_unit('deg', pi / 180 * RAD, 'degree (angle)')
 arcmin = ARCMIN = new_unit("'", ARCDEG / 60, 'minute (angle)')
 arcsec = ARCSEC = new_unit("''", ARCMIN / 60, 'second (angle)')
-L = L = new_unit('L', 1E-3 * M ** 3, 'liter')
+L = l = new_unit('L', 1E-3 * M ** 3, 'liter')
 t = TON = new_unit('t', 1E3 * KG, 'metric ton')
 Np = NP = new_unit('Np', 1, 'neper')
 dB = DECIBEL = new_unit('dB', 0, 'decibel')
@@ -58,7 +58,7 @@ b = B = new_unit('b', 1E-28 * M ** 2, 'barn')
 Ci = CI = new_unit('Ci', 3.7E10 * BQ, 'curie')
 R = new_unit('R', 2.58E-4 * C / KG, 'roentgen')
 rem = REM = new_unit('rem', 1E-2 * SV, 'rem')
-g0 = standard_gravity = new_unit('g0', 9.80665 * m /(s**2), 'Standard gravity')
+g0 = standard_gravity = new_unit('g0', 9.80665 * m / (s ** 2), 'Standard gravity')
 
 # Note : 'rad' defined as 1E-2 Gy as been left out because it conflits with
 # using 'rad' for radians.
