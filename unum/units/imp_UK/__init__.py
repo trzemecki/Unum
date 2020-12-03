@@ -14,7 +14,6 @@ from unum import new_unit
 from unum.units import m, mg, g,s
 from unum.units.others import g0
 
-
 # << define your units hereafter, e.g.
 #    M  = new_unit(  'm' , 0          , 'meter'     )
 #    KM = new_unit( 'km' , 1000. * M  , 'kilometer' ) >>
@@ -82,14 +81,14 @@ qt = quart              = new_unit("qt",            40*fl_oz,           "Quart")
 gal = gallon            = new_unit("gal",           160*fl_oz,          "Gallon")
 fluid_dram = fl_d       = new_unit("fl d",           fl_oz/8,          "Fluid Dram")
 minim                   = new_unit("minim",           fl_d/60,          "Minim")
-peck     = pk       = new_unit("peck",      2*gal,              "Peck")
-bushel   = bu          = new_unit("bushel",    4*gal,              "Bushel")
+peck     = pk           = new_unit("peck",      2*gal,              "Peck")
+bushel   = bu           = new_unit("bushel",    4*gal,              "Bushel")
 
 
 
 
 ## Mass & weight
-#Avoirdupois
+#Avoirdupois as default
 from unum.units.imp_UK.avoirdupois import *
 
 
