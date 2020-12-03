@@ -2,15 +2,16 @@ import unittest
 import warnings
 from warnings import warn
 
+from unum import UnumError
 from unum.units import g, cm, kg
 
-class TestPrecisionWarning(Warning):
+
+class TestPrecisionWarning(UnumError, Warning):
     def __init__(self, msg=None):
         if msg is None:
             # Set some default useful error message
             msg = "Test is not precise enough"
         super().__init__(msg)
-
 
 
 class UKTests(unittest.TestCase):
