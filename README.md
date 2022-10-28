@@ -20,10 +20,10 @@ Library is distributed under **GNU LGPL** license (see `LICENSE.txt` file)
 Installation
 -------------------------------------------------------------------------
 ### Using pip
-If you have not git yet, install it from https://git-scm.com/downloads
+If you have not git yet, first install it from https://git-scm.com/downloads, and then run
 
 ```{r, engine='bash', count_lines}
-    pip install git+git://github.com/trzemecki/Unum.git
+    pip install git+https://github.com/trzemecki/Unum.git
 ```
 
 ### Alternatively
