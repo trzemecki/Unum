@@ -1,6 +1,7 @@
 from __future__ import division, unicode_literals
 
 import collections
+import math
 
 import six
 
@@ -499,6 +500,9 @@ class Unum(object):
             return True
         return s._value != o._value
 
+    def __hash__(self):
+        return hash(self.copy(True)._value)
+
     def __abs__(self):
         return Unum(abs(self._value), self._unit)
 
@@ -539,6 +543,18 @@ class Unum(object):
     @uniform_unum
     def __rpow__(self, other):
         return other.__pow__(self)
+
+    def __round__(self, n=None):
+        return Unum(round(self._value, n), self._unit)
+
+    def __trunc__(self):
+        return Unum(math.trunc(self._value), self._unit)
+
+    def __floor__(self):
+        return Unum(math.floor(self._value), self._unit)
+
+    def __ceil__(self):
+        return Unum(math.ceil(self._value), self._unit)
 
     def __getitem__(self, index):
         return Unum(self._value[index], self._unit)
